@@ -22,6 +22,9 @@ htmlcov/
 !logs/test/*.log
 .state/
 
+# Personal Faculty Preparation Notes
+docs/FACULTY_VIVA_GUIDE.md
+
 # IDE / System
 .vscode/
 .idea/
