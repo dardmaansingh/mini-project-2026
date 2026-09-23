@@ -1,0 +1,11 @@
+# Core Web & API
+Flask>=3.0.0
+requests>=2.31.0
+python-dotenv>=1.0.0
+
+# Database Connectivity (MySQL)
+mysql-connector-python>=8.3.0
+PyMySQL>=1.1.0
+
+# Testing & Utilities
+pytest>=8.0.0

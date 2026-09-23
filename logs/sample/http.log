@@ -1,0 +1,16 @@
+#separator \x09
+#set_separator	,
+#empty_field	(empty)
+#unset_field	-
+#path	http
+#open	2026-09-23-12-00-00
+#fields	ts	uid	id.orig_h	id.orig_p	id.resp_h	id.resp_p	trans_depth	method	host	uri	referrer	version	user_agent	origin	request_body_len	response_body_len	status_code	status_msg	info_code	info_msg	tags	username	password	proxied	orig_fuids	orig_filenames	orig_mime_types	resp_fuids	resp_filenames	resp_mime_types
+#types	time	string	addr	port	addr	port	count	string	string	string	string	string	string	string	count	count	count	string	count	string	set[enum]	string	string	set[string]	vector[string]	vector[string]	vector[string]	vector[string]	vector[string]	vector[string]
+1727096400.300000	CHhAvV3RjeAIvd003	192.168.1.102	51200	142.250.190.46	80	1	GET	google.com	/search?q=zeek+network	-	1.1	Mozilla/5.0	-	0	2450	200	OK	-	-	-	-	-	-	-	-	-	-	-	-
+1727096400.800000	CHhAvV3RjeAIvd022	192.168.1.104	59200	104.21.50.1	80	1	GET	example.com	/index.html	-	1.1	Mozilla/5.0	-	0	1200	200	OK	-	-	-	-	-	-	-	-	-	-	-	-
+1727096400.950000	CHhAvV3RjeAIvd025	172.16.5.90	61001	192.168.1.20	80	1	GET	internal.corp	/../../etc/passwd	-	1.1	sqlmap/1.7#stable	-	0	200	403	Forbidden	-	-	-	-	-	-	-	-	-	-	-	-
+1727096401.000000	CHhAvV3RjeAIvd026	172.16.5.90	61002	192.168.1.20	80	1	POST	internal.corp	/login.php	-	1.1	sqlmap/1.7#stable	-	85	200	500	Internal Error	-	-	-	-	-	-	-	-	-	-	-	-
+1727096401.050000	CHhAvV3RjeAIvd027	172.16.5.90	61003	192.168.1.20	80	1	GET	internal.corp	/search.php?id=1%20union%20select%201,2,password%20from%20users	-	1.1	sqlmap/1.7#stable	-	0	200	200	OK	-	-	-	-	-	-	-	-	-	-	-	-
+1727096401.100000	CHhAvV3RjeAIvd028	172.16.5.90	61004	192.168.1.20	80	1	GET	internal.corp	/.git/config	-	1.1	nikto/2.1.6	-	0	200	404	Not Found	-	-	-	-	-	-	-	-	-	-	-	-
+1727096401.150000	CHhAvV3RjeAIvd029	172.16.5.90	61005	192.168.1.20	80	1	GET	internal.corp	/cmd.php?cmd=;cat%20/etc/shadow	-	1.1	curl/7.88.1	-	0	200	200	OK	-	-	-	-	-	-	-	-	-	-	-	-
+#close	2026-09-23-12-05-00

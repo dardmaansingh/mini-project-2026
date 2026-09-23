@@ -1,0 +1,13 @@
+|--- resp_bytes <= 4988.00
+|   |--- proto_tcp <= 0.50
+|   |   |--- class: 0
+|   |--- proto_tcp >  0.50
+|   |   |--- resp_pkts <= 1.50
+|   |   |   |--- class: 1
+|   |   |--- resp_pkts >  1.50
+|   |   |   |--- orig_pkts <= 279.00
+|   |   |   |   |--- class: 0
+|   |   |   |--- orig_pkts >  279.00
+|   |   |   |   |--- class: 1
+|--- resp_bytes >  4988.00
+|   |--- class: 0

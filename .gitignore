@@ -1,0 +1,29 @@
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment Variables & Secrets
+.env
+
+# Zeek temporary logs / sockets
+*.log
+!logs/sample/*.log
+!logs/test/*.log
+.state/
+
+# IDE / System
+.vscode/
+.idea/
+.DS_Store
+*.swp
