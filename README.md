@@ -1,6 +1,6 @@
 # Wireless Network Traffic Monitor Using Zeek (Mini Project 2026)
 
-A conceptually and academically driven **Multi-Threaded Network Log Analysis and Alerting System** based on Zeek network monitoring, custom Circular Buffer queueing, KMP pattern matching, Decision Tree classification, MySQL relational persistence, Flask REST API, and webhook alerting.
+A conceptually and academically driven **Multi-Threaded Network Log Analysis and Alerting System** based on Zeek network monitoring, custom Circular Buffer queueing, KMP pattern matching, Regex DFA signatures, MySQL relational persistence, Flask REST API, and webhook alerting.
 
 ---
 
@@ -19,13 +19,8 @@ Wireless/Network Traffic
         ↓
  Producer-Consumer Concurrency (Mutex + Counting Semaphores)
         ↓
- ┌─────────────────────────────────────────┐
- │                                         │
- ▼                                         ▼
-Rule Engine + KMP + Regex        Decision Tree Classifier
-(Sliding Window & DFAs)          (10 Features, CART Model)
- │                                         │
- └────────────────────┬────────────────────┘
+ Rule Engine + KMP + Regex Signatures
+ (Stateful Engine, Sliding Window, DFA-based patterns)
                       ↓
                Alert Engine (Deduplication)
                       ↓
@@ -47,7 +42,7 @@ mini-project-2026/
 ├── alerting/             # AlertManager, Severity definitions, HTTP Webhook dispatcher
 ├── backend/              # Flask REST API routes and services
 ├── database/             # MySQL schema.sql, seed.sql, connection pool & repositories
-├── detection/            # Stateful Rule Engine, Regex patterns, Decision Tree & training
+├── detection/            # Stateful Rule Engine, KMP, Regex pattern signatures
 ├── docs/                 # ACADEMIC_MAPPING.md (viva guide across all 6 CSE disciplines)
 ├── frontend/             # HTML, CSS, JavaScript dashboard presentation interface
 ├── logs/                 # Sample Zeek logs (conn.log, http.log) & generated test logs
@@ -110,7 +105,7 @@ PYTHONPATH=. .venv/bin/python scripts/run_pipeline.py --file logs/sample/conn.lo
 For complete theoretical justifications, complexity proofs, and viva voce defense questions, refer to:
 👉 **[docs/ACADEMIC_MAPPING.md](file:///home/dardmaan/mini-project-2026/docs/ACADEMIC_MAPPING.md)**
 
-1. **Data Structures & Algorithms:** Custom Circular Buffer (`processor/dsa/circular_buffer.py`), KMP substring search (`processor/dsa/kmp.py`), Decision Tree classifier (`detection/ml/decision_tree.py`).
+1. **Data Structures & Algorithms:** Custom Circular Buffer (`processor/dsa/circular_buffer.py`), KMP substring search (`processor/dsa/kmp.py`).
 2. **Operating Systems:** Multi-threaded Producer-Consumer architecture with `threading.Lock` and two counting semaphores (`empty_slots`, `filled_slots`), zero race conditions.
 3. **Database Management Systems:** 3NF relational schema in MySQL (`database/schema.sql`), indexed foreign keys, parameterized SQL analytical queries (`database/repositories/`).
 4. **Discrete Mathematics:** Formal regular language specifications (DFAs/Regex) and formal proofs for Safety ($P \implies Q$) and Liveness ($\Box \Diamond \text{Processed}$) properties.
