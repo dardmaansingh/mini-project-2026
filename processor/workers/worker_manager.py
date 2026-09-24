@@ -14,7 +14,6 @@ from processor.workers.producer import ProducerWorker
 from processor.workers.consumer import ConsumerWorker
 from detection.rules.rule_engine import StatefulRuleEngine
 from detection.patterns.regex_patterns import RegexPatternDetector
-from detection.ml.decision_tree import DecisionTreeDetector
 from alerting.alert_manager import AlertManager
 
 
@@ -29,7 +28,6 @@ class ConcurrencyPipelineManager:
         num_consumers: int = 4,
         rule_engine: Optional[StatefulRuleEngine] = None,
         regex_detector: Optional[RegexPatternDetector] = None,
-        ml_detector: Optional[DecisionTreeDetector] = None,
         alert_manager: Optional[AlertManager] = None,
         db_repository: Optional[Any] = None,
     ):
@@ -38,7 +36,6 @@ class ConcurrencyPipelineManager:
 
         self.rule_engine = rule_engine or StatefulRuleEngine()
         self.regex_detector = regex_detector or RegexPatternDetector()
-        self.ml_detector = ml_detector or DecisionTreeDetector()
         self.alert_manager = alert_manager or AlertManager()
         self.db_repository = db_repository
 
@@ -58,7 +55,6 @@ class ConcurrencyPipelineManager:
                 buffer=self.buffer,
                 rule_engine=self.rule_engine,
                 regex_detector=self.regex_detector,
-                ml_detector=self.ml_detector,
                 alert_manager=self.alert_manager,
                 db_repository=self.db_repository,
                 dequeue_timeout=0.5,

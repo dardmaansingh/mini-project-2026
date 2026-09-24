@@ -4,7 +4,7 @@ Consumer Worker Thread.
 Academic Context (Operating Systems / Multithreading):
 - Consumer threads continuously dequeue events from the shared Circular Buffer.
 - Synchronization: Waits on the buffer's filled-slot semaphore, acquires mutex, removes item, signals empty-slot semaphore.
-- Executes the multi-tier detection pipeline (Rules, Regex, KMP, Decision Tree) concurrently.
+- Executes the multi-tier detection pipeline (Rules, Regex, KMP) concurrently.
 """
 
 import threading
@@ -13,7 +13,6 @@ from typing import Optional, Dict, Any
 from processor.dsa.circular_buffer import CircularBuffer
 from detection.rules.rule_engine import StatefulRuleEngine
 from detection.patterns.regex_patterns import RegexPatternDetector
-from detection.ml.decision_tree import DecisionTreeDetector
 from alerting.alert_manager import AlertManager
 
 
@@ -28,7 +27,6 @@ class ConsumerWorker(threading.Thread):
         buffer: CircularBuffer,
         rule_engine: StatefulRuleEngine,
         regex_detector: RegexPatternDetector,
-        ml_detector: DecisionTreeDetector,
         alert_manager: AlertManager,
         db_repository: Optional[Any] = None,
         dequeue_timeout: float = 1.0,
@@ -38,7 +36,6 @@ class ConsumerWorker(threading.Thread):
         self.buffer = buffer
         self.rule_engine = rule_engine
         self.regex_detector = regex_detector
-        self.ml_detector = ml_detector
         self.alert_manager = alert_manager
         self.db_repository = db_repository
         self.dequeue_timeout = dequeue_timeout
@@ -100,24 +97,6 @@ class ConsumerWorker(threading.Thread):
                 detection_method="REGEX",
                 description=match.description,
                 evidence=match.to_dict(),
-                timestamp=ts,
-            )
-            if alert:
-                self.alerts_generated += 1
-                if self.db_repository:
-                    self._persist_alert_safely(alert)
-
-        # Stage 3: Decision Tree ML Classification
-        ml_result = self.ml_detector.classify_event(event)
-        if ml_result.get("is_suspicious"):
-            alert = self.alert_manager.process_detection(
-                alert_type=f"ML_{ml_result.get('class_label')}",
-                severity="HIGH",
-                source_ip=src_ip,
-                destination_ip=dst_ip,
-                detection_method="DECISION_TREE",
-                description=f"Decision tree classified connection as suspicious (confidence {ml_result.get('confidence')}).",
-                evidence=ml_result,
                 timestamp=ts,
             )
             if alert:

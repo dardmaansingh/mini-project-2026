@@ -6,7 +6,6 @@ Academic Requirement (Verification & Validation):
 - Verifies Rule-based Port Scan detection.
 - Verifies KMP string matching on malicious payloads.
 - Verifies Regex signature matching for SQLi and scanner tools.
-- Verifies Decision Tree classification correctness.
 """
 
 import os
@@ -14,7 +13,6 @@ import unittest
 from processor.readers.zeek_reader import ZeekReader
 from detection.rules.rule_engine import StatefulRuleEngine
 from detection.patterns.regex_patterns import RegexPatternDetector
-from detection.ml.decision_tree import DecisionTreeDetector
 from alerting.alert_manager import AlertManager
 
 
@@ -76,40 +74,6 @@ class TestDetectionAccuracy(unittest.TestCase):
         regex_patterns = [rm.pattern_name for rm in regex_matches]
         self.assertIn("SQL_INJECTION", regex_patterns)
         self.assertIn("SCANNER_USER_AGENT", regex_patterns)
-
-    def test_decision_tree_classification(self):
-        """
-        Verifies Decision Tree correctly classifies normal traffic as 0 and probe/scan traffic as 1.
-        """
-        dt = DecisionTreeDetector()
-
-        # Normal established web transaction
-        normal_event = {
-            "duration": 0.85,
-            "orig_bytes": 1200,
-            "resp_bytes": 15000,
-            "protocol": "tcp",
-            "conn_state": "SF",
-            "destination_port": 443,
-            "orig_pkts": 10,
-            "resp_pkts": 14,
-        }
-        res_normal = dt.classify_event(normal_event)
-        self.assertFalse(res_normal["is_suspicious"], "Normal SF connection should not be flagged.")
-
-        # Suspicious port scan probe
-        probe_event = {
-            "duration": 0.001,
-            "orig_bytes": 0,
-            "resp_bytes": 0,
-            "protocol": "tcp",
-            "conn_state": "S0",
-            "destination_port": 22,
-            "orig_pkts": 1,
-            "resp_pkts": 0,
-        }
-        res_probe = dt.classify_event(probe_event)
-        self.assertTrue(res_probe["is_suspicious"], "Failed SYN probe (S0) must be flagged.")
 
 
 if __name__ == "__main__":
