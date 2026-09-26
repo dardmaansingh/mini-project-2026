@@ -1,5 +1,5 @@
 /**
- * Zeek Network Traffic Monitor - Live Dashboard Controller
+ * NetWatch — Live Dashboard Controller
  * Handles real-time polling, REST API communication, charts, and burst injection.
  */
 
@@ -62,11 +62,9 @@ async function fetchSummary() {
             const dbBadge = document.getElementById("db-status-badge");
             if (dbBadge) {
                 if (data.database_connected) {
-                    dbBadge.className = "status-pill status-online";
-                    dbBadge.innerHTML = `<span class="pulse-dot"></span> MySQL: Online`;
+                    dbBadge.innerHTML = `<span class="pill-dot live"></span> MySQL: connected`;
                 } else {
-                    dbBadge.className = "status-pill status-warning";
-                    dbBadge.innerHTML = `<span class="dot" style="background:#f59e0b"></span> DB: In-Memory (MySQL Pending)`;
+                    dbBadge.innerHTML = `<span class="pill-dot warn"></span> DB: in-memory mode`;
                 }
             }
         }
@@ -83,6 +81,7 @@ async function fetchProtocols() {
         const res = await fetch(`${API_BASE}/statistics/protocols`);
         const json = await res.json();
         if (json.status === "success") {
+            // protocol-bars is now inside .proto-list; we write rows directly
             const container = document.getElementById("protocol-bars");
             if (!container) return;
 
@@ -90,7 +89,7 @@ async function fetchProtocols() {
             const total = items.reduce((acc, curr) => acc + curr.count, 0) || 1;
 
             if (items.length === 0) {
-                container.innerHTML = `<div class="text-muted text-center py-2">No protocol data recorded yet.</div>`;
+                container.innerHTML = `<div class="text-muted" style="padding:0.5rem 0;font-size:0.8rem;">No protocol data yet.</div>`;
                 return;
             }
 
@@ -103,7 +102,7 @@ async function fetchProtocols() {
                         <div class="proto-track">
                             <div class="proto-fill ${protoLower}" style="width: ${pct}%"></div>
                         </div>
-                        <span class="proto-val">${pct}% (${p.count})</span>
+                        <span class="proto-pct">${pct}% (${p.count})</span>
                     </div>
                 `;
             }).join("");
@@ -134,13 +133,13 @@ async function fetchTopSources() {
                 const count = item.connection_count;
                 const isSuspicious = count > 15;
                 const statusBadge = isSuspicious
-                    ? `<span class="sev-badge sev-HIGH">SUSPICIOUS PROBE</span>`
-                    : `<span class="sev-badge sev-LOW">BENIGN HOST</span>`;
+                    ? `<span class="host-badge host-suspicious">Suspicious</span>`
+                    : `<span class="host-badge host-clean">Clean</span>`;
 
                 return `
                     <tr>
-                        <td class="font-mono">${item.source_ip}</td>
-                        <td class="font-mono">${count}</td>
+                        <td class="mono">${item.source_ip}</td>
+                        <td class="mono">${count}</td>
                         <td>${statusBadge}</td>
                     </tr>
                 `;
@@ -204,13 +203,13 @@ async function fetchAlerts() {
                 const ts = new Date(a.timestamp * 1000).toLocaleTimeString();
                 return `
                     <tr>
-                        <td class="font-mono highlight">${a.alert_id}</td>
-                        <td class="font-mono text-muted">${ts}</td>
-                        <td class="font-mono">${a.source_ip}</td>
-                        <td class="font-mono">${a.destination_ip}</td>
-                        <td><span class="badge font-mono">${a.detection_method}</span></td>
+                        <td><span class="alert-id">${a.alert_id}</span></td>
+                        <td class="mono text-muted">${ts}</td>
+                        <td class="mono">${a.source_ip}</td>
+                        <td class="mono">${a.destination_ip}</td>
+                        <td><span class="method-tag">${a.detection_method}</span></td>
                         <td>${a.description}</td>
-                        <td><span class="sev-badge sev-${a.severity}">${a.severity}</span></td>
+                        <td><span class="sev sev-${a.severity}">${a.severity}</span></td>
                     </tr>
                 `;
             }).join("");

@@ -1,9 +1,3 @@
-"""
-Events REST API Route Blueprint.
-
-Provides connection event streams and on-demand traffic burst triggering for demos.
-"""
-
 from flask import Blueprint, jsonify, request
 from backend.services.pipeline_service import PipelineService
 
@@ -12,7 +6,6 @@ events_bp = Blueprint("events", __name__, url_prefix="/api/v1/events")
 
 @events_bp.route("/recent", methods=["GET"])
 def get_recent_events():
-    """Returns recent parsed connection records."""
     service = PipelineService.get_instance()
     limit = int(request.args.get("limit", 50))
     events = service.log_repo.get_recent_logs(limit=limit)
@@ -25,10 +18,6 @@ def get_recent_events():
 
 @events_bp.route("/inject-burst", methods=["POST"])
 def inject_burst():
-    """
-    On-demand injection of a 100 or 1000 event burst into the Circular Buffer.
-    Used for live faculty demonstration of buffer utilization and worker throughput.
-    """
     data = request.get_json(silent=True) or {}
     burst_size = int(data.get("count", 100))
     if burst_size <= 0 or burst_size > 2000:

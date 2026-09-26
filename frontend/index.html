@@ -3,220 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wireless Network Traffic Monitor Using Zeek | NOC Dashboard</title>
+    <title>NetWatch — Wireless Network Traffic Monitor</title>
+    <meta name="description" content="Real-time wireless network traffic analysis powered by Zeek, a custom circular buffer pipeline, and multi-threaded detection engines.">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
-        <!-- Top Navigation Bar -->
+
+        <!-- ── Navbar ── -->
         <header class="navbar">
             <div class="brand">
                 <div class="brand-icon">
-                    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    <!-- Signal / network icon -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12.55a11 11 0 0 1 14.08 0"/>
+                        <path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+                        <circle cx="12" cy="20" r="1" fill="currentColor"/>
+                    </svg>
                 </div>
-                <div>
-                    <h1>Zeek Network Traffic Monitor</h1>
-                    <span class="sub-title">CSE Minor Project 2026 • Multi-Threaded Analysis Engine</span>
+                <div class="brand-wordmark">
+                    <span class="brand-name">NetWatch</span>
+                    <span class="brand-sub">Zeek-powered · Multi-threaded · Real-time</span>
                 </div>
             </div>
 
-            <div class="nav-controls">
-                <div class="status-pill status-online">
-                    <span class="pulse-dot"></span> Pipeline Active
+            <div class="nav-right">
+                <div class="pill">
+                    <span class="pill-dot live"></span>
+                    Pipeline live
                 </div>
-                <div id="db-status-badge" class="status-pill status-warning">
-                    <span class="dot"></span> DB: Checking...
+                <div id="db-status-badge" class="pill">
+                    <span class="pill-dot warn"></span>
+                    DB: checking…
                 </div>
-                <div class="quick-actions">
-                    <button id="btn-burst-100" class="btn btn-secondary" title="Inject 100 sample events">⚡ Burst 100</button>
-                    <button id="btn-burst-1000" class="btn btn-primary" title="Stress test 1000 events">🚀 Stress 1000</button>
-                </div>
+                <button id="btn-burst-100" class="btn btn-ghost" title="Inject 100 sample events">
+                    ⚡ Burst 100
+                </button>
+                <button id="btn-burst-1000" class="btn btn-solid" title="Stress test with 1,000 events">
+                    🚀 Stress 1k
+                </button>
             </div>
         </header>
 
-        <!-- Main Dashboard View -->
-        <main class="dashboard-content">
-            <!-- Metric Cards Grid -->
-            <section class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-header">
-                        <span class="metric-title">Total Monitored Events</span>
-                        <div class="metric-icon-wrap cyan">
-                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        </div>
-                    </div>
-                    <div class="metric-value" id="val-total-connections">0</div>
-                    <div class="metric-footer">
-                        <span class="text-muted">Avg Duration:</span>
-                        <span class="highlight" id="val-avg-duration">0.00s</span>
-                    </div>
-                </div>
+        <!-- ── Metric Cards ── -->
+        <div class="section-label">Live telemetry</div>
+        <section class="metrics-grid">
 
-                <div class="metric-card">
-                    <div class="metric-header">
-                        <span class="metric-title">Network Volume</span>
-                        <div class="metric-icon-wrap violet">
-                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"/><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"/><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"/></svg>
-                        </div>
-                    </div>
-                    <div class="metric-value" id="val-total-bytes">0 B</div>
-                    <div class="metric-footer">
-                        <span class="text-muted">Originator + Responder</span>
+            <div class="metric-card blue">
+                <div class="metric-top">
+                    <span class="metric-label">Monitored events</span>
+                    <div class="metric-icon blue">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
                     </div>
                 </div>
+                <div class="metric-val" id="val-total-connections">0</div>
+                <div class="metric-meta">
+                    <span>Avg duration</span>
+                    <span class="accent" id="val-avg-duration">0.000s</span>
+                </div>
+            </div>
 
-                <div class="metric-card">
-                    <div class="metric-header">
-                        <span class="metric-title">Security Incidents</span>
-                        <div class="metric-icon-wrap crimson">
-                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        </div>
-                    </div>
-                    <div class="metric-value text-crimson" id="val-total-alerts">0</div>
-                    <div class="metric-chips">
-                        <span class="badge-chip chip-crit" id="chip-crit">0 CRIT</span>
-                        <span class="badge-chip chip-high" id="chip-high">0 HIGH</span>
-                        <span class="badge-chip chip-med" id="chip-med">0 MED</span>
+            <div class="metric-card indigo">
+                <div class="metric-top">
+                    <span class="metric-label">Network volume</span>
+                    <div class="metric-icon indigo">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="2" x2="12" y2="22"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
                     </div>
                 </div>
+                <div class="metric-val" id="val-total-bytes">0 B</div>
+                <div class="metric-meta">
+                    <span>Originator + responder combined</span>
+                </div>
+            </div>
 
-                <div class="metric-card">
-                    <div class="metric-header">
-                        <span class="metric-title">Circular Buffer Queue (DSA)</span>
-                        <div class="metric-icon-wrap amber">
-                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        </div>
-                    </div>
-                    <div class="metric-value" id="val-buffer-utilization">0 / 256</div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" id="buffer-progress-bar" style="width: 0%;"></div>
-                    </div>
-                    <div class="metric-footer">
-                        <span>Peak (HWM): <b id="val-buffer-hwm">0</b></span>
-                        <span>Dropped: <b id="val-buffer-dropped">0</b></span>
+            <div class="metric-card rose">
+                <div class="metric-top">
+                    <span class="metric-label">Security incidents</span>
+                    <div class="metric-icon rose">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
                     </div>
                 </div>
-            </section>
+                <div class="metric-val rose" id="val-total-alerts">0</div>
+                <div class="chips" style="margin-top:0.5rem;">
+                    <span class="chip chip-rose" id="chip-crit">0 CRIT</span>
+                    <span class="chip chip-amber" id="chip-high">0 HIGH</span>
+                    <span class="chip chip-blue" id="chip-med">0 MED</span>
+                </div>
+            </div>
 
-            <!-- Middle Section: Visualizations & Analytics -->
-            <section class="analytics-row">
-                <!-- Protocol Distribution -->
-                <div class="card col-half">
-                    <div class="card-header">
-                        <h3>Protocol Breakdown (Transport Layer)</h3>
-                        <span class="badge">OSI L4</span>
-                    </div>
-                    <div class="protocol-chart-container" id="protocol-bars">
-                        <!-- Dynamic protocol bars injected by JS -->
+            <div class="metric-card amber">
+                <div class="metric-top">
+                    <span class="metric-label">Circular buffer</span>
+                    <div class="metric-icon amber">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
                     </div>
                 </div>
+                <div class="metric-val" id="val-buffer-utilization">0 / 256</div>
+                <div class="prog-track">
+                    <div class="prog-fill" id="buffer-progress-bar" style="width:0%"></div>
+                </div>
+                <div class="metric-meta">
+                    <span>Peak: <strong id="val-buffer-hwm">0</strong></span>
+                    <span>Dropped: <strong id="val-buffer-dropped">0</strong></span>
+                </div>
+            </div>
 
-                <!-- Top Talker Source IPs -->
-                <div class="card col-half">
-                    <div class="card-header">
-                        <h3>Top Active / Suspicious Source Hosts</h3>
-                        <span class="badge">GROUP BY source_ip</span>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Source IP</th>
-                                    <th>Connection Count</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="top-sources-body">
-                                <tr><td colspan="3" class="text-center text-muted">Awaiting traffic events...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+        </section>
 
-            <!-- Detection Architecture Telemetry Card -->
-            <section class="card mb-4">
-                <div class="card-header">
-                    <h3>Active Detection Subsystems</h3>
-                    <span class="badge">Explainable AI & Automata</span>
-                </div>
-                <div class="engines-status-row">
-                    <div class="engine-item">
-                        <span class="engine-indicator active"></span>
-                        <div class="engine-info">
-                            <strong>Stateful Rule Engine</strong>
-                            <small>Sliding window (Port Scans & Floods)</small>
-                        </div>
-                    </div>
-                    <div class="engine-item">
-                        <span class="engine-indicator active"></span>
-                        <div class="engine-info">
-                            <strong>KMP String Matcher</strong>
-                            <small>O(N+M) Substring LPS Search</small>
-                        </div>
-                    </div>
-                    <div class="engine-item">
-                        <span class="engine-indicator active"></span>
-                        <div class="engine-info">
-                            <strong>Regex Pattern Automata</strong>
-                            <small>Type-3 Chomsky DFAs (SQLi / Traversal)</small>
-                        </div>
-                    </div>
-                    <div class="engine-item">
-                        <span class="engine-indicator active"></span>
-                        <div class="engine-info">
-                            <strong>Decision Tree Classifier</strong>
-                            <small>Interpretable CART Model (max_depth=4)</small>
-                        </div>
-                    </div>
-                </div>
-            </section>
+        <!-- ── Analytics row ── -->
+        <div class="section-label">Traffic analysis</div>
+        <div class="two-col">
 
-            <!-- Alerts Stream -->
-            <section class="card">
-                <div class="card-header flex-between">
+            <!-- Protocol breakdown -->
+            <div class="card mb-0">
+                <div class="card-head">
                     <div>
-                        <h3>Security Incidents & Anomaly Feed</h3>
-                        <span class="sub-title">Correlated by Alert Engine with Evidence Payloads</span>
+                        <div class="card-title">Protocol breakdown</div>
+                        <div class="card-subtitle">Transport layer (L4) distribution</div>
                     </div>
-                    <div class="filter-controls">
-                        <select id="select-severity-filter" class="form-select">
-                            <option value="">All Severities</option>
-                            <option value="CRITICAL">Critical Only</option>
-                            <option value="HIGH">High Only</option>
-                            <option value="MEDIUM">Medium Only</option>
-                            <option value="LOW">Low Only</option>
-                        </select>
-                    </div>
+                    <span class="card-tag">OSI L4</span>
                 </div>
+                <div class="proto-list" id="protocol-bars">
+                    <div class="text-muted" style="padding:0.5rem 0; font-size:0.8rem;">No traffic recorded yet.</div>
+                </div>
+            </div>
 
-                <div class="table-responsive">
-                    <table class="data-table alerts-table">
+            <!-- Top sources -->
+            <div class="card mb-0">
+                <div class="card-head">
+                    <div>
+                        <div class="card-title">Top source hosts</div>
+                        <div class="card-subtitle">Ranked by connection count</div>
+                    </div>
+                    <span class="card-tag">GROUP BY src</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Alert ID</th>
-                                <th>Timestamp</th>
                                 <th>Source IP</th>
-                                <th>Target</th>
-                                <th>Detection Method</th>
-                                <th>Incident Description</th>
-                                <th>Severity</th>
+                                <th>Connections</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody id="alerts-table-body">
-                            <tr><td colspan="7" class="text-center text-muted">No security alerts triggered yet.</td></tr>
+                        <tbody id="top-sources-body">
+                            <tr><td colspan="3" class="center text-muted">Waiting for traffic…</td></tr>
                         </tbody>
                     </table>
                 </div>
-            </section>
-        </main>
+            </div>
 
-        <!-- Toast notification -->
-        <div id="toast" class="toast"></div>
+        </div>
+
+        <!-- ── Detection engines ── -->
+        <div class="section-label">Detection subsystems</div>
+        <div class="card">
+            <div class="card-head">
+                <div>
+                    <div class="card-title">Active detection engines</div>
+                    <div class="card-subtitle">All engines running concurrently via producer-consumer pipeline</div>
+                </div>
+                <div class="pill" style="font-size:0.72rem;">
+                    <span class="pill-dot live"></span> All operational
+                </div>
+            </div>
+            <div class="engines-grid">
+                <div class="engine-card">
+                    <span class="engine-dot"></span>
+                    <div class="engine-text">
+                        <strong>Stateful Rule Engine</strong>
+                        <small>Sliding-window detection for port scans &amp; SYN floods</small>
+                    </div>
+                </div>
+                <div class="engine-card">
+                    <span class="engine-dot"></span>
+                    <div class="engine-text">
+                        <strong>KMP String Matcher</strong>
+                        <small>O(N+M) LPS-based payload substring search</small>
+                    </div>
+                </div>
+                <div class="engine-card">
+                    <span class="engine-dot"></span>
+                    <div class="engine-text">
+                        <strong>Regex Automata (DFA)</strong>
+                        <small>Type-3 Chomsky finite automata for SQLi &amp; path traversal</small>
+                    </div>
+                </div>
+                <div class="engine-card">
+                    <span class="engine-dot"></span>
+                    <div class="engine-text">
+                        <strong>Signature Rule Set</strong>
+                        <small>Curated threat signatures matched against Zeek conn &amp; http logs</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Alerts feed ── -->
+        <div class="section-label">Security feed</div>
+        <div class="card mb-0">
+            <div class="card-head">
+                <div>
+                    <div class="card-title">Incidents &amp; anomalies</div>
+                    <div class="card-subtitle">Correlated by alert engine — last 25 events</div>
+                </div>
+                <div class="filter-row">
+                    <select id="select-severity-filter" class="form-select">
+                        <option value="">All severities</option>
+                        <option value="CRITICAL">Critical</option>
+                        <option value="HIGH">High</option>
+                        <option value="MEDIUM">Medium</option>
+                        <option value="LOW">Low</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Alert ID</th>
+                            <th>Time</th>
+                            <th>Source</th>
+                            <th>Destination</th>
+                            <th>Method</th>
+                            <th>Description</th>
+                            <th>Severity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alerts-table-body">
+                        <tr><td colspan="7" class="center text-muted">No alerts triggered yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="toast"></div>
 
     <script src="js/dashboard.js"></script>
 </body>
