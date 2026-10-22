@@ -40,19 +40,19 @@ Wireless/Network Traffic
 ```
 mini-project-2026/
 ├── alerting/             # AlertManager, Severity definitions, HTTP Webhook dispatcher
-├── backend/              # Flask REST API routes and services
+├── backend/              # Flask REST API routes (statistics, wireless, alerts, events, pipeline)
 ├── database/             # MySQL schema.sql, seed.sql, connection pool & repositories
-├── detection/            # Stateful Rule Engine, KMP, Regex pattern signatures
+├── detection/            # Stateful Rule Engine, KMP, Regex signatures & Wireless RF Engine
+│   └── wireless/         # 802.11 Live RF Monitor, RSSI Tracker, Evil Twin & Rogue Detector
 ├── docs/                 # ACADEMIC_MAPPING.md (viva guide across all 6 CSE disciplines)
-├── frontend/             # HTML, CSS, JavaScript dashboard presentation interface
+├── frontend/             # Real-time cyber-ops dashboard (Canvas visualizers, Forensics Modal)
 ├── logs/                 # Sample Zeek logs (conn.log, http.log) & generated test logs
 ├── processor/            # DSA (Circular Buffer, KMP), Zeek Parser, File Monitor & Workers
 ├── scripts/              # Pipeline runner & 1000-burst test log generator
-├── tests/                # Unit tests, detection accuracy tests, 1000-entry burst test
+├── tests/                # Unit tests, wireless RF tests, accuracy tests, 1000-burst test
 ├── .env.example          # Environment configuration template
 ├── .gitignore            # Git exclusion rules
-├── README.md             # Project overview & documentation
-└── requirements.txt      # Python dependencies
+└── README.md             # Project overview & documentation
 ```
 
 ---
@@ -63,17 +63,15 @@ mini-project-2026/
 ```bash
 # Activate virtual environment
 source .venv/bin/activate
-
-# Install required dependencies
-pip install -r requirements.txt
 ```
 
-### 2. Run All Automated Tests
+### 2. Run All Automated Unit & Integration Tests (41 Tests)
 ```bash
-# Run unit tests (Circular buffer, KMP, Zeek parser)
-PYTHONPATH=. .venv/bin/python -m unittest tests/unit/test_circular_buffer.py
-PYTHONPATH=. .venv/bin/python -m unittest tests/unit/test_kmp.py
-PYTHONPATH=. .venv/bin/python -m unittest tests/unit/test_zeek_parser.py
+# Run unit & wireless detection tests
+PYTHONPATH=. .venv/bin/python -m unittest tests/unit/test_circular_buffer.py tests/unit/test_kmp.py tests/unit/test_zeek_parser.py tests/unit/test_wireless_detection.py
+
+# Run REST API integration tests (including /api/v1/wireless endpoints)
+PYTHONPATH=. .venv/bin/python -m unittest tests/integration/test_flask_api.py tests/integration/test_wireless_api.py
 
 # Run detection accuracy & validation tests (>= 50 real entries)
 PYTHONPATH=. .venv/bin/python tests/detection/test_detection_accuracy.py
@@ -84,18 +82,10 @@ PYTHONPATH=. .venv/bin/python tests/detection/test_detection_accuracy.py
 PYTHONPATH=. .venv/bin/python tests/concurrency/test_burst_1000.py
 ```
 
-**Measured Benchmark Results:**
-- **Burst Size:** 1,000 entries
-- **Buffer Capacity:** 256 (forces multiple modulo wrap-arounds)
-- **Worker Threads:** 4 consumers
-- **Lost Entries:** **0 (0.0% loss)**
-- **Dropped Entries:** **0**
-- **High Water Mark:** 256 / 256 (100% capacity utilized safely)
-- **Throughput:** **> 1,700 events/second**
-
-### 4. Run the Pipeline Runner CLI
+### 4. Start the Live Interactive Dashboard Server
 ```bash
-PYTHONPATH=. .venv/bin/python scripts/run_pipeline.py --file logs/sample/conn.log
+PYTHONPATH=. .venv/bin/python backend/app.py
+# Access dashboard at: http://127.0.0.1:5000
 ```
 
 ---

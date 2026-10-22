@@ -20,16 +20,16 @@ DB_NAME = os.getenv("DB_NAME", "zeek_monitor")
 DB_USER = os.getenv("DB_USER", "root")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
-# Driver detection
+# Driver detection (prefer lightweight pure-python pymysql for instant initialization)
 DRIVER_TYPE = None
 try:
-    import mysql.connector
-    from mysql.connector import pooling
-    DRIVER_TYPE = "mysql.connector"
+    import pymysql
+    DRIVER_TYPE = "pymysql"
 except ImportError:
     try:
-        import pymysql
-        DRIVER_TYPE = "pymysql"
+        import mysql.connector
+        from mysql.connector import pooling
+        DRIVER_TYPE = "mysql.connector"
     except ImportError:
         DRIVER_TYPE = None
 
@@ -56,6 +56,7 @@ class DatabaseConnectionPool:
                     password=DB_PASSWORD,
                     database=DB_NAME,
                     autocommit=True,
+                    connection_timeout=2,
                 )
             except Exception as e:
                 raise ConnectionError(f"Failed to connect to MySQL ({DB_HOST}:{DB_PORT}): {e}")
@@ -70,6 +71,7 @@ class DatabaseConnectionPool:
                     database=DB_NAME,
                     autocommit=True,
                     cursorclass=pymysql.cursors.DictCursor,
+                    connect_timeout=2,
                 )
             except Exception as e:
                 raise ConnectionError(f"Failed to connect to MySQL via PyMySQL: {e}")
@@ -87,6 +89,18 @@ class DatabaseConnectionPool:
         """
         if DRIVER_TYPE is None:
             return False, "Neither mysql-connector-python nor pymysql is installed."
+
+        # Fast pre-flight TCP socket check to prevent blocking on offline daemon
+        import socket
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(0.3)
+            result = sock.connect_ex((DB_HOST, DB_PORT))
+            sock.close()
+            if result != 0:
+                return False, f"MySQL offline or unreachable on {DB_HOST}:{DB_PORT} (in-memory fallback active)"
+        except Exception as e:
+            return False, f"Socket error checking MySQL ({DB_HOST}:{DB_PORT}): {e}"
 
         try:
             conn = cls.get_connection()

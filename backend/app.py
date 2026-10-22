@@ -13,6 +13,7 @@ from backend.routes.statistics import stats_bp
 from backend.routes.alerts import alerts_bp
 from backend.routes.events import events_bp
 from backend.routes.pipeline import pipeline_bp
+from backend.routes.wireless import wireless_bp
 
 
 def create_app() -> Flask:
@@ -24,6 +25,7 @@ def create_app() -> Flask:
     app.register_blueprint(alerts_bp)
     app.register_blueprint(events_bp)
     app.register_blueprint(pipeline_bp)
+    app.register_blueprint(wireless_bp)
 
     @app.after_request
     def add_cors_headers(response):
