@@ -116,7 +116,7 @@ export default function DetectionRules() {
   }
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
+    <div className="p-4 space-y-4 animate-fade-in">
       {/* Header */}
       <div className="page-header">
         <div>
@@ -251,23 +251,28 @@ export default function DetectionRules() {
           filteredRules.map(rule => (
             <div
               key={rule.id}
-              className={`card transition-all duration-200 border ${
-                rule.enabled ? 'border-navy-700 hover:border-navy-600' : 'border-navy-800 opacity-60'
-              }`}
+              style={{
+                backgroundColor: '#FFFFFF',
+                border: `1px solid ${rule.enabled ? '#D8DEE4' : '#E2E8F0'}`,
+                borderRadius: 4, padding: '12px 14px',
+                opacity: rule.enabled ? 1 : 0.6,
+                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                transition: 'all 150ms ease',
+              }}
             >
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 {/* Left: Info */}
                 <div className="space-y-1.5 flex-1">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-navy-700 text-blue-400 border border-navy-600">
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 3, backgroundColor: '#F8FAFC', color: '#0284C7', border: '1px solid #D8DEE4' }}>
                       {rule.id}
                     </span>
-                    <h3 className="font-semibold text-white text-base">{rule.name}</h3>
+                    <h3 className="font-semibold text-gray-900 text-sm">{rule.name}</h3>
                     <span className={severityClass(rule.severity)}>
                       {rule.severity}
                     </span>
                     {rule.category && (
-                      <span className="badge bg-purple-500/10 text-purple-400 border border-purple-500/30 capitalize">
+                      <span style={{ display: 'inline-flex', alignItems: 'center', padding: '1px 7px', borderRadius: 3, fontSize: 10, fontWeight: 500, backgroundColor: 'rgba(148,163,184,0.1)', color: '#94A3B8', border: '1px solid rgba(148,163,184,0.2)', textTransform: 'capitalize' }}>
                         {rule.category}
                       </span>
                     )}
@@ -340,15 +345,21 @@ export default function DetectionRules() {
                   {/* Toggle button */}
                   <button
                     onClick={() => handleToggleEnabled(rule)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                      rule.enabled ? 'bg-blue-600' : 'bg-navy-700'
-                    }`}
+                    style={{
+                      position: 'relative', display: 'inline-flex', height: 22, width: 40,
+                      alignItems: 'center', borderRadius: 11, cursor: 'pointer', border: 'none',
+                      backgroundColor: rule.enabled ? '#237A3B' : '#CBD5E1',
+                      transition: 'background-color 200ms ease',
+                    }}
                     title={rule.enabled ? 'Disable rule' : 'Enable rule'}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        rule.enabled ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                    style={{
+                      display: 'inline-block', width: 14, height: 14, borderRadius: '50%', backgroundColor: '#F8FAFC',
+                      transform: rule.enabled ? 'translateX(22px)' : 'translateX(3px)',
+                      transition: 'transform 200ms ease',
+                      flexShrink: 0,
+                    }}
                     />
                   </button>
                 </div>
@@ -360,19 +371,19 @@ export default function DetectionRules() {
 
       {/* Configure Rule Modal */}
       {editingRule && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="card w-full max-w-md bg-navy-900 border-navy-700 shadow-2xl p-6 animate-scale-up">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-navy-800">
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ backgroundColor: '#FFFFFF', border: '1px solid #D8DEE4', borderRadius: 6, padding: '20px 24px', width: '100%', maxWidth: 460, boxShadow: '0 10px 30px rgba(0,0,0,0.15)' }}>
+            <div className="flex items-center justify-between pb-3 mb-4" style={{ borderBottom: '1px solid #EDF0F4' }}>
               <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Settings size={16} className="text-blue-400" />
+                <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <Settings size={16} className="text-green-700" />
                   Configure {editingRule.id}
                 </h3>
-                <p className="text-xs text-gray-400 mt-0.5">{editingRule.name}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{editingRule.name}</p>
               </div>
               <button
                 onClick={() => setEditingRule(null)}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 hover:text-gray-700"
               >
                 <X size={18} />
               </button>
@@ -380,7 +391,7 @@ export default function DetectionRules() {
 
             <form onSubmit={handleSaveConfig} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
                   Severity Level
                 </label>
                 <select
@@ -397,7 +408,7 @@ export default function DetectionRules() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
                   Detection Window (seconds)
                 </label>
                 <input
@@ -419,7 +430,7 @@ export default function DetectionRules() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
                   Event Threshold (count or rate)
                 </label>
                 <input
@@ -441,7 +452,7 @@ export default function DetectionRules() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">
+                <label className="block text-xs font-semibold text-gray-700 mb-1">
                   Cooldown Period (seconds)
                 </label>
                 <input
@@ -462,7 +473,7 @@ export default function DetectionRules() {
                 </p>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-navy-800">
+              <div className="flex justify-end gap-2 pt-3" style={{ borderTop: '1px solid #EDF0F4' }}>
                 <button
                   type="button"
                   onClick={() => setEditingRule(null)}
