@@ -75,6 +75,33 @@ class TestDetectionAccuracy(unittest.TestCase):
         self.assertIn("SQL_INJECTION", regex_patterns)
         self.assertIn("SCANNER_USER_AGENT", regex_patterns)
 
+    def test_excessive_dns_flood_detection(self):
+        """
+        Validates that high-volume DNS requests exceeding threshold generate EXCESSIVE_DNS_QUERY_FLOOD alerts.
+        """
+        rule_engine = StatefulRuleEngine(dns_query_threshold=10, time_window_seconds=60.0)
+        detections = []
+        attacker_ip = "192.168.1.155"
+
+        for i in range(15):
+            event = {
+                "source_ip": attacker_ip,
+                "destination_ip": "1.1.1.1",
+                "destination_port": 53,
+                "protocol": "udp",
+                "service": "dns",
+                "timestamp": 1727096400.0 + (i * 0.1),
+                "query": f"exfil-chunk-{i}.tunnel.biz",
+            }
+            dets = rule_engine.evaluate_event(event)
+            detections.extend(dets)
+
+        dns_alerts = [d for d in detections if d.alert_type == "EXCESSIVE_DNS_QUERY_FLOOD"]
+        self.assertGreater(len(dns_alerts), 0, "Excessive DNS queries must trigger EXCESSIVE_DNS_QUERY_FLOOD alert.")
+        self.assertEqual(dns_alerts[0].source_ip, attacker_ip)
+        self.assertEqual(dns_alerts[0].severity, "HIGH")
+        self.assertIn("DNS requests within", dns_alerts[0].description)
+
 
 if __name__ == "__main__":
     unittest.main()

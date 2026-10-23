@@ -61,14 +61,16 @@ class StatefulRuleEngine:
         failed_conn_threshold: int = 10,
         time_window_seconds: float = 60.0,
         exfiltration_byte_threshold: int = 10_000_000,
+        dns_query_threshold: int = 25,
     ):
         self.port_scan_threshold = port_scan_threshold
         self.failed_conn_threshold = failed_conn_threshold
         self.time_window_seconds = time_window_seconds
         self.exfiltration_byte_threshold = exfiltration_byte_threshold
+        self.dns_query_threshold = dns_query_threshold
 
-        # Sliding Window State Tracking: source_ip -> list of (timestamp, dest_port, conn_state)
-        self.ip_history: Dict[str, List[Tuple[float, int, str]]] = defaultdict(list)
+        # Sliding Window State Tracking: source_ip -> list of (timestamp, dest_port, conn_state, service)
+        self.ip_history: Dict[str, List[Tuple[Any, ...]]] = defaultdict(list)
 
         # High-Risk Signatures searched via KMP
         self.kmp_signatures = [
@@ -96,13 +98,14 @@ class StatefulRuleEngine:
         dest_ip = event.get("destination_ip", "0.0.0.0")
         dest_port = event.get("destination_port", 0)
         conn_state = event.get("conn_state", "-")
+        service = str(event.get("service", "")).lower()
         ts = event.get("timestamp", time.time())
         if ts <= 0:
             ts = time.time()
 
         # Update sliding history
         self._purge_old_records(source_ip, ts)
-        self.ip_history[source_ip].append((ts, dest_port, conn_state))
+        self.ip_history[source_ip].append((ts, dest_port, conn_state, service))
         history = self.ip_history[source_ip]
 
         # -------------------------------------------------------------
@@ -200,5 +203,32 @@ class StatefulRuleEngine:
                         timestamp=ts,
                     )
                 )
+
+        # -------------------------------------------------------------
+        # Rule 5: Excessive DNS Query Flood / DNS Tunneling
+        # Single host generating high-frequency DNS requests to port 53
+        # -------------------------------------------------------------
+        dns_count = sum(
+            1 for rec in history
+            if rec[1] == 53 or (len(rec) > 3 and rec[3] == "dns")
+        )
+        if dns_count >= self.dns_query_threshold:
+            detections.append(
+                SuspiciousEvent(
+                    alert_type="EXCESSIVE_DNS_QUERY_FLOOD",
+                    severity="HIGH",
+                    source_ip=source_ip,
+                    destination_ip=dest_ip,
+                    detection_method="RULE",
+                    description=f"Host generated {dns_count} DNS requests within {self.time_window_seconds}s window (threshold: {self.dns_query_threshold}). Suspected DNS flood, tunneling, or botnet C2 activity.",
+                    evidence={
+                        "dns_query_count": dns_count,
+                        "threshold": self.dns_query_threshold,
+                        "destination_ip": dest_ip,
+                        "time_window_seconds": self.time_window_seconds,
+                    },
+                    timestamp=ts,
+                )
+            )
 
         return detections

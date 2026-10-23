@@ -84,6 +84,19 @@ class TestFlaskAPI(unittest.TestCase):
         self.assertEqual(data["status"], "success")
         self.assertEqual(data["data"]["requested_burst"], 20)
 
+    def test_inject_dns_flood(self):
+        res = self.client.post(
+            "/api/v1/events/inject-dns-flood",
+            data=json.dumps({"count": 30, "attacker_ip": "192.168.1.188"}),
+            content_type="application/json"
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertEqual(data["status"], "success")
+        self.assertEqual(data["data"]["requested_queries"], 30)
+        self.assertEqual(data["data"]["attacker_ip"], "192.168.1.188")
+        self.assertGreaterEqual(data["data"]["written_to_disk"], 30)
+
 
 if __name__ == "__main__":
     unittest.main()

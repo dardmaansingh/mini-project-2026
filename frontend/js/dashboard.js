@@ -102,7 +102,8 @@ function initEventListeners() {
         });
     }
 
-    // 5. Zeek burst buttons
+    // 5. Zeek burst & DNS flood buttons
+    document.getElementById("btn-dns-flood")?.addEventListener("click", () => triggerDnsFlood(35));
     document.getElementById("btn-burst-100")?.addEventListener("click", () => triggerBurst(100));
     document.getElementById("btn-burst-1000")?.addEventListener("click", () => triggerBurst(1000));
 
@@ -803,6 +804,10 @@ async function mitigateNetwork(bssid) {
 // Threat Injection Handler
 // =============================================================================
 async function triggerThreatInjection(threatType) {
+    if (threatType === "DNS_FLOOD") {
+        await triggerDnsFlood(35);
+        return;
+    }
     showToast(`Simulating scenario: ${threatType}...`);
     try {
         const res = await fetch(`${API_BASE}/wireless/inject-threat`, {
@@ -973,6 +978,27 @@ async function triggerBurst(count) {
         const json = await res.json();
         if (json.status === "success") {
             showToast(`Injected ${json.data.enqueued} events in ${json.data.injection_time_seconds}s.`);
+            await fetchDashboardData();
+        } else {
+            showToast(`Failed: ${json.message}`);
+        }
+    } catch (err) {
+        showToast(`Error: ${err.message}`);
+    }
+}
+
+async function triggerDnsFlood(count = 35) {
+    showToast(`Emitting ${count} live DNS queries into conn.log & dns.log...`);
+    try {
+        const res = await fetch(`${API_BASE}/events/inject-dns-flood`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ count: count, attacker_ip: "192.168.1.155" })
+        });
+        const json = await res.json();
+        if (json.status === "success") {
+            showToast(`Wrote ${json.data.written_to_disk} live DNS queries to disk & buffer! Checking alerts...`);
+            if (isSoundEnabled) playCyberAlert();
             await fetchDashboardData();
         } else {
             showToast(`Failed: ${json.message}`);

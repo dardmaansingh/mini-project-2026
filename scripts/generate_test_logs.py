@@ -17,8 +17,8 @@ def generate_zeek_conn_records(count: int = 1000) -> List[Dict[str, Any]]:
     base_ts = time.time() - 3600
 
     for i in range(count):
-        # 80% normal traffic, 15% scan probe, 5% heavy transfer
-        scenario = random.choices(["normal", "scan", "heavy"], weights=[0.80, 0.15, 0.05])[0]
+        # 70% normal traffic, 15% scan probe, 5% heavy transfer, 10% dns flood
+        scenario = random.choices(["normal", "scan", "heavy", "dns_flood"], weights=[0.70, 0.15, 0.05, 0.10])[0]
 
         if scenario == "normal":
             record = {
@@ -55,6 +55,25 @@ def generate_zeek_conn_records(count: int = 1000) -> List[Dict[str, Any]]:
                 "history": "S",
                 "orig_pkts": 1,
                 "resp_pkts": 0,
+            }
+        elif scenario == "dns_flood":
+            record = {
+                "uid": f"Ctest{i:06d}",
+                "timestamp": base_ts + (i * 0.05),
+                "source_ip": "192.168.1.155",  # Attacker IP sending excessive DNS queries
+                "source_port": random.randint(40000, 60000),
+                "destination_ip": "192.168.1.1",
+                "destination_port": 53,
+                "protocol": "udp",
+                "service": "dns",
+                "duration": 0.002,
+                "orig_bytes": 45,
+                "resp_bytes": 120,
+                "conn_state": "SF",
+                "history": "Dd",
+                "orig_pkts": 1,
+                "resp_pkts": 1,
+                "query": f"subdomain{i}.attacker-c2.biz",
             }
         else:  # heavy / exfiltration
             record = {

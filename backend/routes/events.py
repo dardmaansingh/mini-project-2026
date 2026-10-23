@@ -30,3 +30,21 @@ def inject_burst():
         "message": f"Successfully injected {result['enqueued']} events into Circular Buffer.",
         "data": result
     })
+
+
+@events_bp.route("/inject-dns-flood", methods=["POST"])
+def inject_dns_flood():
+    data = request.get_json(silent=True) or {}
+    count = int(data.get("count", 35))
+    attacker_ip = str(data.get("attacker_ip", "192.168.1.155"))
+    if count <= 0 or count > 500:
+        return jsonify({"status": "error", "message": "DNS query count must be between 1 and 500."}), 400
+
+    service = PipelineService.get_instance()
+    result = service.inject_dns_flood(count=count, attacker_ip=attacker_ip)
+    return jsonify({
+        "status": "success",
+        "message": f"Successfully wrote {result['written_to_disk']} live DNS queries to disk and Circular Buffer.",
+        "data": result
+    })
+

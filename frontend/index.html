@@ -69,6 +69,7 @@
                     </button>
                     <div class="dropdown-content" id="threat-menu">
                         <div class="dropdown-title">Test Scenarios</div>
+                        <button class="dropdown-link" data-threat="DNS_FLOOD">⚡ Excessive DNS Query Flood</button>
                         <button class="dropdown-link" data-threat="EVIL_TWIN">Evil Twin AP (SSID Spoofing)</button>
                         <button class="dropdown-link" data-threat="DEAUTH_STORM">Deauth Flood Storm</button>
                         <button class="dropdown-link" data-threat="HIGH_POWER_ROGUE">High-Power Rogue AP</button>
@@ -76,7 +77,10 @@
                     </div>
                 </div>
 
-                <!-- Pipeline burst -->
+                <!-- Live DNS Flood & Pipeline burst -->
+                <button id="btn-dns-flood" class="btn btn-primary btn-sm" title="Write live DNS queries to disk and trigger DNS flood alert">
+                    Live DNS Flood
+                </button>
                 <button id="btn-burst-100" class="btn btn-outline btn-sm" title="Inject 100 sample Zeek events">
                     Inject 100
                 </button>

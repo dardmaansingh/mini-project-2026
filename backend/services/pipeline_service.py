@@ -14,6 +14,7 @@ from database.connection import DatabaseConnectionPool
 from database.repositories.log_repository import LogRepository
 from database.repositories.alert_repository import AlertRepository
 from scripts.generate_test_logs import generate_zeek_conn_records
+from processor.live.live_zeek_writer import LiveZeekWriter
 
 
 class InMemoryFallbackRepository:
@@ -111,6 +112,7 @@ class PipelineService:
             db_repository=active_repo,
         )
         self.manager.start()
+        self.writer = LiveZeekWriter()
 
     @classmethod
     def get_instance(cls) -> "PipelineService":
@@ -135,5 +137,34 @@ class PipelineService:
             "requested_burst": count,
             "enqueued": enqueued,
             "injection_time_seconds": round(duration, 4),
+            "buffer_metrics": self.manager.buffer.get_metrics(),
+        }
+
+    def inject_dns_flood(self, count: int = 35, attacker_ip: str = "192.168.1.155") -> Dict[str, Any]:
+        """
+        Simulates live excessive DNS query flood:
+        1. Writes real Zeek TSV lines directly to conn.log and dns.log in real time.
+        2. Feeds the records into the circular buffer so consumers flag EXCESSIVE_DNS_QUERY_FLOOD.
+        """
+        start = time.perf_counter()
+        records = self.writer.simulate_dns_flood(
+            attacker_ip=attacker_ip,
+            count=count,
+            delay_sec=0.01,
+        )
+
+        enqueued = 0
+        for r in records:
+            if self.manager.buffer.enqueue(r, block=True, timeout=2.0):
+                enqueued += 1
+
+        duration = time.perf_counter() - start
+        return {
+            "requested_queries": count,
+            "attacker_ip": attacker_ip,
+            "written_to_disk": len(records),
+            "enqueued": enqueued,
+            "elapsed_seconds": round(duration, 4),
+            "target_logs": [self.writer.conn_log_path, self.writer.dns_log_path],
             "buffer_metrics": self.manager.buffer.get_metrics(),
         }

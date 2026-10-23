@@ -157,9 +157,13 @@ class ZeekParser:
         record["destination_ip"] = str(record.get("destination_ip", "0.0.0.0"))
         record["protocol"] = str(record.get("protocol", "unknown")).lower()
         record["service"] = str(record.get("service", "-"))
+        if record.get("destination_port") == 53 and record["service"] in ("-", "", "unknown"):
+            record["service"] = "dns"
         record["conn_state"] = str(record.get("conn_state", "-"))
         record["history"] = str(record.get("history", "-"))
         record["uid"] = str(record.get("uid", "-"))
+        if "query" in raw:
+            record["query"] = str(raw["query"])
 
         return record
 
