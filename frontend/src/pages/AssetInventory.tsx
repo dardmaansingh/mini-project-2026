@@ -109,7 +109,7 @@ export default function AssetInventory() {
   }
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
+    <div className="p-4 space-y-4 animate-fade-in">
       {/* Page Header */}
       <div className="page-header">
         <div>
@@ -256,7 +256,7 @@ export default function AssetInventory() {
         <div className="table-container">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-navy-700 bg-navy-900/60">
+              <tr className="border-b border-[#D8DEE4] bg-[#F8FAFC]">
                 <th className="table-head">Asset</th>
                 <th className="table-head">Type</th>
                 <th className="table-head">IP Address</th>
@@ -268,7 +268,7 @@ export default function AssetInventory() {
                 <th className="table-head text-right">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-navy-700/50">
+            <tbody className="divide-y divide-gray-100">
               {loading ? (
                 <tr>
                   <td colSpan={9} className="py-12 text-center text-gray-500 text-sm">
@@ -292,11 +292,11 @@ export default function AssetInventory() {
                     >
                       <td className="table-cell">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-navy-700 border border-navy-600 flex items-center justify-center text-gray-300">
+                          <div className="w-8 h-8 rounded bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-600">
                             <Icon size={16} />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-200 text-sm">{asset.name}</p>
+                            <p className="font-medium text-gray-900 text-sm">{asset.name}</p>
                             {asset.hostname && (
                               <p className="text-xs text-gray-500 font-mono">{asset.hostname}</p>
                             )}
@@ -305,19 +305,19 @@ export default function AssetInventory() {
                       </td>
 
                       <td className="table-cell capitalize">
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-gray-600">
                           {asset.asset_type.replace('_', ' ')}
                         </span>
                       </td>
 
                       <td className="table-cell">
-                        <span className="font-mono text-xs text-blue-400">
+                        <span className="font-mono text-xs font-semibold text-blue-700">
                           {asset.ip_address || '—'}
                         </span>
                       </td>
 
                       <td className="table-cell">
-                        <span className="font-mono text-xs text-gray-400">
+                        <span className="font-mono text-xs text-gray-600">
                           {asset.mac_address || '—'}
                         </span>
                       </td>
@@ -374,23 +374,23 @@ export default function AssetInventory() {
 
       {/* Asset Detail Slide-over / Modal */}
       {selectedAsset && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end">
-          <div className="w-full max-w-md bg-navy-900 border-l border-navy-700 h-full p-6 overflow-y-auto space-y-6 shadow-2xl animate-fade-in">
-            <div className="flex items-center justify-between pb-4 border-b border-navy-800">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex justify-end">
+          <div className="w-full max-w-md bg-white border-l border-[#D8DEE4] h-full p-6 overflow-y-auto space-y-6 shadow-2xl animate-fade-in text-gray-900">
+            <div className="flex items-center justify-between pb-4 border-b border-[#EDF0F4]">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
                   <Shield size={20} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-white">{selectedAsset.name}</h3>
-                  <p className="text-xs text-gray-400 uppercase tracking-wider">
+                  <h3 className="text-base font-bold text-gray-900">{selectedAsset.name}</h3>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider">
                     {selectedAsset.asset_type.replace('_', ' ')}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedAsset(null)}
-                className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-navy-800"
+                className="text-gray-400 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100"
               >
                 <X size={18} />
               </button>
@@ -398,8 +398,8 @@ export default function AssetInventory() {
 
             {/* Authorization Flag Banner */}
             {!selectedAsset.is_authorized && (
-              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3 text-red-300 text-xs">
-                <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+              <div className="p-3 bg-red-50 border border-red-200 rounded flex items-start gap-3 text-red-800 text-xs">
+                <AlertTriangle size={16} className="shrink-0 mt-0.5 text-red-600" />
                 <div>
                   <span className="font-semibold">Unauthorized Device Flag:</span> This device has
                   not been registered in the campus directory. Network access is restricted and
@@ -410,46 +410,46 @@ export default function AssetInventory() {
 
             {/* Properties List */}
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Network Attributes
               </h4>
-              <div className="bg-navy-800 rounded-xl p-4 space-y-2.5 text-xs">
-                <div className="flex justify-between py-1 border-b border-navy-700/50">
-                  <span className="text-gray-400">Hostname</span>
-                  <span className="font-mono text-gray-200">{selectedAsset.hostname || '—'}</span>
+              <div className="bg-gray-50 border border-gray-200 rounded p-4 space-y-2.5 text-xs">
+                <div className="flex justify-between py-1 border-b border-gray-200">
+                  <span className="text-gray-500 font-medium">Hostname</span>
+                  <span className="font-mono text-gray-900 font-semibold">{selectedAsset.hostname || '—'}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-navy-700/50">
-                  <span className="text-gray-400">IP Address</span>
-                  <span className="font-mono text-blue-400">{selectedAsset.ip_address || '—'}</span>
+                <div className="flex justify-between py-1 border-b border-gray-200">
+                  <span className="text-gray-500 font-medium">IP Address</span>
+                  <span className="font-mono font-semibold text-blue-700">{selectedAsset.ip_address || '—'}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-navy-700/50">
-                  <span className="text-gray-400">MAC Address</span>
-                  <span className="font-mono text-gray-200">{selectedAsset.mac_address || '—'}</span>
+                <div className="flex justify-between py-1 border-b border-gray-200">
+                  <span className="text-gray-500 font-medium">MAC Address</span>
+                  <span className="font-mono text-gray-800">{selectedAsset.mac_address || '—'}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-navy-700/50">
-                  <span className="text-gray-400">Vendor</span>
-                  <span className="text-gray-200">{selectedAsset.vendor || '—'}</span>
+                <div className="flex justify-between py-1 border-b border-gray-200">
+                  <span className="text-gray-500 font-medium">Vendor</span>
+                  <span className="text-gray-800">{selectedAsset.vendor || '—'}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-navy-700/50">
-                  <span className="text-gray-400">Location</span>
-                  <span className="text-gray-200">{selectedAsset.location || '—'}</span>
+                <div className="flex justify-between py-1 border-b border-gray-200">
+                  <span className="text-gray-500 font-medium">Location</span>
+                  <span className="text-gray-800">{selectedAsset.location || '—'}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-navy-700/50">
-                  <span className="text-gray-400">VLAN ID</span>
-                  <span className="text-gray-200">{selectedAsset.vlan_id || '—'}</span>
+                <div className="flex justify-between py-1 border-b border-gray-200">
+                  <span className="text-gray-500 font-medium">VLAN ID</span>
+                  <span className="text-gray-800">{selectedAsset.vlan_id || '—'}</span>
                 </div>
                 {selectedAsset.switch_id && (
-                  <div className="flex justify-between py-1 border-b border-navy-700/50">
-                    <span className="text-gray-400">Switch & Port</span>
-                    <span className="text-gray-200 font-mono">
+                  <div className="flex justify-between py-1 border-b border-gray-200">
+                    <span className="text-gray-500 font-medium">Switch & Port</span>
+                    <span className="text-gray-800 font-mono">
                       {selectedAsset.switch_id} : {selectedAsset.switch_port || '1'}
                     </span>
                   </div>
                 )}
                 {selectedAsset.ap_id && (
-                  <div className="flex justify-between py-1 border-b border-navy-700/50">
-                    <span className="text-gray-400">Connected AP</span>
-                    <span className="text-gray-200 font-mono">{selectedAsset.ap_id}</span>
+                  <div className="flex justify-between py-1 border-b border-gray-200">
+                    <span className="text-gray-500 font-medium">Connected AP</span>
+                    <span className="text-gray-800 font-mono">{selectedAsset.ap_id}</span>
                   </div>
                 )}
                 <div className="flex justify-between py-1">
@@ -497,16 +497,16 @@ export default function AssetInventory() {
 
       {/* Register Asset Modal */}
       {isRegisterOpen && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="card w-full max-w-lg bg-navy-900 border-navy-700 shadow-2xl p-6 animate-scale-up">
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-navy-800">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <Plus size={18} className="text-blue-400" />
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="card w-full max-w-lg bg-white border-[#D8DEE4] shadow-2xl p-6 animate-scale-up text-gray-900">
+            <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#EDF0F4]">
+              <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                <Plus size={18} className="text-green-700" />
                 Register New Asset
               </h3>
               <button
                 onClick={() => setIsRegisterOpen(false)}
-                className="text-gray-400 hover:text-white"
+                className="text-gray-400 hover:text-gray-700"
               >
                 <X size={18} />
               </button>
