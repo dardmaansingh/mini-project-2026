@@ -59,7 +59,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
+    <div className="p-4 space-y-4 animate-fade-in">
       {/* Page Header */}
       <div className="page-header">
         <div>
@@ -69,14 +69,14 @@ export default function Settings() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-navy-800 border border-navy-700 text-xs">
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-white border border-[#D8DEE4] text-xs shadow-sm">
             <span
               className={`w-2 h-2 rounded-full ${
-                health?.status === 'healthy' ? 'bg-green-400' : 'bg-red-400'
+                health?.status === 'healthy' ? 'bg-green-500' : 'bg-red-500'
               }`}
             />
-            <span className="text-gray-400">Backend:</span>
-            <span className="font-semibold text-gray-200">
+            <span className="text-gray-500">Backend:</span>
+            <span className="font-semibold text-gray-900 font-mono">
               {health?.status ?? 'Connecting…'} (v{health?.version ?? '2.0'})
             </span>
           </div>
@@ -84,28 +84,28 @@ export default function Settings() {
       </div>
 
       {/* Settings Navigation Tabs */}
-      <div className="flex border-b border-navy-700/80 gap-6 text-sm font-medium">
+      <div className="flex border-b border-[#D8DEE4] gap-6 text-xs font-semibold uppercase tracking-wider">
         <button
           onClick={() => setActiveTab('general')}
-          className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-2.5 flex items-center gap-2 border-b-2 transition-colors ${
             activeTab === 'general'
-              ? 'border-blue-500 text-blue-400 font-semibold'
-              : 'border-transparent text-gray-400 hover:text-gray-200'
+              ? 'border-green-700 text-green-700 font-bold'
+              : 'border-transparent text-gray-500 hover:text-gray-900'
           }`}
         >
-          <SettingsIcon size={16} />
+          <SettingsIcon size={14} />
           General & Retention
         </button>
 
         <button
           onClick={() => setActiveTab('notifications')}
-          className={`pb-3 flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-2.5 flex items-center gap-2 border-b-2 transition-colors ${
             activeTab === 'notifications'
-              ? 'border-blue-500 text-blue-400 font-semibold'
-              : 'border-transparent text-gray-400 hover:text-gray-200'
+              ? 'border-green-700 text-green-700 font-bold'
+              : 'border-transparent text-gray-500 hover:text-gray-900'
           }`}
         >
-          <Bell size={16} />
+          <Bell size={14} />
           Alert Channels
         </button>
 
@@ -275,10 +275,10 @@ export default function Settings() {
             </h3>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-navy-900/60 rounded-xl border border-navy-700/50">
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-200">
                 <div>
-                  <p className="text-sm font-medium text-gray-200">Email Notifications</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs font-semibold text-gray-900">Email Notifications</p>
+                  <p className="text-xs text-gray-500">
                     Send immediate incident digests when critical or high severity alerts fire
                   </p>
                 </div>
@@ -291,7 +291,7 @@ export default function Settings() {
                       emailAlertsEnabled: e.target.checked,
                     })
                   }
-                  className="rounded border-navy-600 bg-navy-700 text-blue-500 h-5 w-5"
+                  className="rounded border-gray-300 bg-white text-green-700 h-4 w-4"
                 />
               </div>
 
@@ -365,76 +365,74 @@ export default function Settings() {
       {/* Tab: SOC Audit Trail */}
       {activeTab === 'audit' && (
         <div className="space-y-4">
-          <div className="card p-0 overflow-hidden">
-            <div className="p-4 border-b border-navy-700 bg-navy-900/60 flex items-center justify-between">
+          <div className="card shadow-sm p-0 overflow-hidden">
+            <div className="p-3 border-b border-[#EDF0F4] bg-[#F8FAFC] flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-                  <Terminal size={16} className="text-blue-400" />
+                <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+                  <Terminal size={14} className="text-gray-500" />
                   SecOps Audit Trail
                 </h3>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-[11px] text-gray-500 mt-0.5">
                   Tamper-evident record of analyst actions, rule modifications, and alert resolutions
                 </p>
               </div>
               <button
                 onClick={() => refetchAudit()}
-                className="btn btn-secondary text-xs"
+                className="btn btn-secondary text-xs py-1 px-2.5 shadow-sm"
               >
-                <RefreshCw size={12} className={auditLoading ? 'animate-spin' : ''} />
+                <RefreshCw size={12} className={auditLoading ? 'animate-spin text-green-700' : 'text-gray-500'} />
                 Refresh
               </button>
             </div>
 
-            <div className="table-container">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto">
+              <table className="data-table">
                 <thead>
-                  <tr className="border-b border-navy-700 bg-navy-900/40">
-                    <th className="table-head">Timestamp</th>
-                    <th className="table-head">Actor</th>
-                    <th className="table-head">Action</th>
-                    <th className="table-head">Target Resource</th>
-                    <th className="table-head">Details</th>
+                  <tr>
+                    <th style={{ width: 140 }}>Timestamp</th>
+                    <th style={{ width: 120 }}>Actor</th>
+                    <th style={{ width: 120 }}>Action</th>
+                    <th style={{ width: 160 }}>Target Resource</th>
+                    <th>Details</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-navy-700/50">
+                <tbody>
                   {auditLoading ? (
                     <tr>
-                      <td colSpan={5} className="py-12 text-center text-gray-500 text-sm">
+                      <td colSpan={5} className="py-10 text-center text-gray-400 text-xs">
                         Loading audit log trail…
                       </td>
                     </tr>
                   ) : (auditData?.items ?? []).length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-12 text-center text-gray-500 text-sm">
+                      <td colSpan={5} className="py-10 text-center text-gray-400 text-xs">
                         No audit events logged yet.
                       </td>
                     </tr>
                   ) : (
                     auditData?.items.map(log => (
-                      <tr key={log.id} className="table-row">
-                        <td className="table-cell font-mono text-xs text-gray-400">
+                      <tr key={log.id}>
+                        <td className="font-mono text-gray-500 text-[11px]">
                           {formatTs(log.created_at)}
                         </td>
-                        <td className="table-cell">
-                          <span className="font-medium text-gray-200 text-xs flex items-center gap-1.5">
-                            <UserCheck size={12} className="text-blue-400" />
+                        <td>
+                          <span className="font-semibold text-gray-900 text-xs flex items-center gap-1.5">
+                            <UserCheck size={13} className="text-green-700" />
                             {log.actor}
                           </span>
                         </td>
-                        <td className="table-cell">
-                          <span className="badge bg-navy-700 text-gray-300 border border-navy-600 font-mono text-[11px]">
+                        <td>
+                          <span className="badge badge-info">
                             {log.action}
                           </span>
                         </td>
-                        <td className="table-cell">
-                          <span className="text-xs text-gray-400">
-                            {log.resource_type ? `${log.resource_type}: ` : ''}
-                            <span className="font-mono text-gray-300">
-                              {log.resource_id || '—'}
-                            </span>
+                        <td className="text-xs text-gray-600">
+                          {log.resource_type ? `${log.resource_type}: ` : ''}
+                          <span className="font-mono text-gray-800 font-medium">
+                            {log.resource_id || '—'}
                           </span>
                         </td>
-                        <td className="table-cell text-xs text-gray-400 font-mono max-w-xs truncate">
+                        <td className="text-xs text-gray-500 font-mono max-w-xs truncate">
                           {log.details ? JSON.stringify(log.details) : '—'}
                         </td>
                       </tr>
@@ -449,32 +447,32 @@ export default function Settings() {
 
       {/* Tab: Institutional Authorization & Scope */}
       {activeTab === 'authorization' && (
-        <div className="card space-y-4 max-w-4xl border-blue-500/30">
+        <div className="card shadow-sm space-y-4 max-w-4xl border-[#D8DEE4]">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-green-50 text-green-700 flex items-center justify-center shrink-0">
               <Shield size={22} />
             </div>
-            <div className="space-y-2">
-              <h3 className="text-base font-bold text-white">
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-gray-900">
                 Institutional Deployment & Compliance Notice
               </h3>
-              <p className="text-xs text-gray-300 leading-relaxed">
+              <p className="text-xs text-gray-500 leading-relaxed">
                 NetSentinel is architected to operate within strict academic compliance guidelines (FERPA, GDPR, and institutional acceptable use policies).
               </p>
             </div>
           </div>
 
-          <div className="p-4 bg-navy-900/60 rounded-xl border border-navy-700 space-y-3 text-xs text-gray-300">
-            <div className="flex items-center gap-2 text-yellow-400 font-semibold">
-              <AlertTriangle size={16} />
+          <div className="p-4 bg-amber-50 rounded border border-amber-200 space-y-2 text-xs text-amber-900">
+            <div className="flex items-center gap-2 text-amber-800 font-bold">
+              <AlertTriangle size={15} />
               Current Status: Local Development & Synthetic Demonstration Phase
             </div>
-            <p className="text-gray-400 leading-relaxed">
+            <p className="leading-relaxed text-amber-800/90">
               In accordance with project guidelines, live capture from physical switches, wireless controllers,
               and authentication radius logs remains isolated until explicit written authorization and log delegation
               is granted by the university IT security committee.
             </p>
-            <p className="text-gray-400 leading-relaxed">
+            <p className="leading-relaxed text-amber-800/90">
               All alerts, anomalies, and traffic streams visible in this demonstration are synthesized through
               the high-fidelity simulation engine to mirror real-world campus scenarios (e.g. library WiFi roaming,
               lab port scans, and dormitory brute force attempts) without collecting student personally identifiable
@@ -483,9 +481,9 @@ export default function Settings() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="p-3 bg-navy-800 rounded-xl border border-navy-700/60">
-              <p className="font-semibold text-gray-200 mb-1">Approved Telemetry Profiles</p>
-              <ul className="list-disc list-inside text-gray-400 space-y-1">
+            <div className="p-3 bg-gray-50 rounded border border-gray-200">
+              <p className="font-semibold text-gray-900 mb-1">Approved Telemetry Profiles</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-1">
                 <li>Zeek conn.log, dns.log, dhcp.log</li>
                 <li>Syslog UDP:514 (RFC 5424)</li>
                 <li>NetFlow v9 / IPFIX (Sampled)</li>
@@ -493,9 +491,9 @@ export default function Settings() {
               </ul>
             </div>
 
-            <div className="p-3 bg-navy-800 rounded-xl border border-navy-700/60">
-              <p className="font-semibold text-gray-200 mb-1">Security Governance</p>
-              <ul className="list-disc list-inside text-gray-400 space-y-1">
+            <div className="p-3 bg-gray-50 rounded border border-gray-200">
+              <p className="font-semibold text-gray-900 mb-1">Security Governance</p>
+              <ul className="list-disc list-inside text-gray-600 space-y-1">
                 <li>No student packet payloads stored</li>
                 <li>DNS queries hashed after 30 days</li>
                 <li>Full audit logging on alert changes</li>
