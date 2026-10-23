@@ -30,3 +30,8 @@ docs/FACULTY_VIVA_GUIDE.md
 .idea/
 .DS_Store
 *.swp
+
+# SQLite databases
+*.db
+*.sqlite
+*.sqlite3
