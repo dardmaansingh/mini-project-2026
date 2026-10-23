@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { useApi } from '@/hooks/useApi'
 import type { NetworkAsset } from '@/types'
-import { Wifi, ChevronRight, MapPin, Server } from 'lucide-react'
-import { timeAgo } from '@/lib/utils'
+import { Wifi, ChevronRight, Activity, Radio, AlertTriangle } from 'lucide-react'
+import { timeAgo, formatTs } from '@/lib/utils'
 
 interface APList { total: number; items: NetworkAsset[] }
 
 export default function AccessPoints() {
   const { data, loading } = useApi<APList>('/api/access-points')
   const [selected, setSelected] = useState<NetworkAsset | null>(null)
+
   const { data: apEvents, loading: evLoading } = useApi<any>(
     `/api/access-points/${selected?.ap_id}/events`,
     { skip: !selected?.ap_id }
@@ -19,145 +20,219 @@ export default function AccessPoints() {
   )
 
   return (
-    <div className="p-6 space-y-4 animate-fade-in">
-      <div className="page-header">
+    <div className="p-4 space-y-3 animate-fade-in text-gray-900">
+
+      {/* Header ribbon */}
+      <div className="flex items-center justify-between pb-1">
         <div>
-          <h2 className="page-title">Access Points</h2>
-          <p className="page-subtitle">Wireless infrastructure status and event history</p>
+          <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+            <Radio size={16} className="text-green-700" />
+            FortiAP Wireless Infrastructure & Controllers
+          </h2>
+          <p className="text-xs text-gray-500">
+            Monitoring {data?.total ?? 0} campus access points and radio channels
+          </p>
         </div>
-        <div className="text-xs text-gray-400">{data?.total ?? 0} access points registered</div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        {/* AP list */}
-        <div className="card p-0">
-          <div className="p-4 border-b border-navy-700">
-            <p className="card-title"><Wifi size={14} />Access Points</p>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+
+        {/* ── AP list panel (Crisp White Card) ─────────────────────── */}
+        <div className="card shadow-sm p-0 overflow-hidden">
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-[#F8FAFC] border-b border-[#D8DEE4]">
+            <Wifi size={13} className="text-green-700" />
+            <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+              Discovered Access Points
+            </span>
           </div>
+
           {loading ? (
-            <div className="py-8 text-center text-gray-500 text-sm">Loading…</div>
+            <div className="p-8 text-center text-gray-400 text-xs">
+              Loading controllers…
+            </div>
           ) : (
-            <div className="divide-y divide-navy-700/50">
-              {data?.items.map(ap => (
-                <button key={ap.id} onClick={() => setSelected(ap)}
-                  className={`w-full text-left px-4 py-3 hover:bg-navy-700/40 transition-colors flex items-center justify-between ${selected?.id === ap.id ? 'bg-blue-500/5 border-l-2 border-blue-500' : ''}`}>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${ap.status === 'online' ? 'bg-green-400' : 'bg-gray-500'}`} />
-                      <span className="text-sm font-medium text-gray-200">{ap.ap_id}</span>
+            <div className="overflow-y-auto max-h-[calc(100vh-210px)] divide-y divide-gray-100">
+              {data?.items.map(ap => {
+                const isSelected = selected?.id === ap.id
+                const isOnline   = ap.status === 'online'
+                const hasAlerts  = (ap.open_alert_count ?? 0) > 0
+
+                return (
+                  <button
+                    key={ap.id}
+                    onClick={() => setSelected(ap)}
+                    className="w-full text-left p-3 flex items-center justify-between transition-colors hover:bg-gray-50"
+                    style={{
+                      borderLeft: isSelected ? '3px solid #237A3B' : '3px solid transparent',
+                      backgroundColor: isSelected ? '#F0FDF4' : undefined,
+                    }}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-2 h-2 rounded-full shrink-0"
+                          style={{ backgroundColor: isOnline ? '#16A34A' : '#DC2626' }}
+                        />
+                        <span className="font-mono text-xs font-bold text-gray-900">
+                          {ap.ap_id}
+                        </span>
+                        <span className={`badge ${isOnline ? 'badge-green' : 'badge-critical'}`}>
+                          {ap.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1 pl-4">
+                        {ap.name} · {ap.location ?? 'Campus AP'}
+                      </p>
+                      <div className="flex gap-3 mt-1 pl-4 text-[11px]">
+                        {hasAlerts && (
+                          <span className="text-orange-600 font-semibold flex items-center gap-1">
+                            <AlertTriangle size={11} /> {ap.open_alert_count} alert{ap.open_alert_count > 1 ? 's' : ''}
+                          </span>
+                        )}
+                        <span className="text-gray-500 font-mono">
+                          {(ap.recent_event_count ?? 0).toLocaleString()} events
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5 ml-4">{ap.name}</p>
-                    <div className="flex gap-3 mt-1 ml-4 text-[10px] text-gray-500">
-                      {ap.open_alert_count ? (
-                        <span className="text-orange-400">⚠ {ap.open_alert_count} alert{ap.open_alert_count > 1 ? 's' : ''}</span>
-                      ) : null}
-                      <span>{ap.recent_event_count?.toLocaleString() ?? 0} events</span>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-gray-600" />
-                </button>
-              ))}
+                    <ChevronRight size={13} className="text-gray-400 shrink-0" />
+                  </button>
+                )
+              })}
             </div>
           )}
         </div>
 
-        {/* AP detail */}
-        <div className="xl:col-span-2 space-y-4">
+        {/* ── AP detail panel (White Card) ─────────────────────────── */}
+        <div className="xl:col-span-2 space-y-3">
           {!selected ? (
-            <div className="card py-16 text-center text-gray-500">
-              <Wifi size={40} className="mx-auto mb-3 text-gray-600" />
-              <p>Select an access point to view details</p>
+            <div className="card shadow-sm flex flex-col items-center justify-center p-16 text-gray-400 gap-2">
+              <Wifi size={32} className="text-gray-300" />
+              <p className="text-xs">Select an access point from the list to view telemetry</p>
             </div>
           ) : (
             <>
-              {/* Info */}
-              <div className="card">
-                <div className="card-header">
-                  <span className="card-title"><Wifi size={14} />{selected.ap_id}</span>
-                  <span className={`badge ${selected.status === 'online' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'badge-informational'}`}>
+              {/* AP info card */}
+              <div className="card shadow-sm p-0 overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2.5 bg-[#F8FAFC] border-b border-[#D8DEE4]">
+                  <div className="flex items-center gap-2">
+                    <Wifi size={13} className="text-green-700" />
+                    <span className="font-mono text-xs font-bold text-gray-900">
+                      {selected.ap_id}
+                    </span>
+                    <span className="text-xs text-gray-500">— {selected.name}</span>
+                  </div>
+                  <span className={`badge ${selected.status === 'online' ? 'badge-green' : 'badge-critical'}`}>
                     {selected.status}
                   </span>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+
+                <div className="p-3 grid grid-cols-2 md:grid-cols-3 gap-2">
                   {[
-                    ['Name', selected.name],
-                    ['IP Address', selected.ip_address],
-                    ['Switch', selected.switch_id],
-                    ['Port', selected.switch_port],
-                    ['VLAN', selected.vlan_id],
-                    ['Location', selected.location ?? 'Unknown'],
+                    ['IP Address',    selected.ip_address],
+                    ['Switch ID',     selected.switch_id],
+                    ['Switch Port',   selected.switch_port],
+                    ['VLAN ID',       selected.vlan_id],
+                    ['Campus Area',   selected.location ?? 'Not set'],
+                    ['Configured SSID', selected.ssid ?? 'Campus-WPA2-Enterprise'],
                   ].map(([k, v]) => (
-                    <div key={k} className="bg-navy-700/40 rounded-lg p-2">
-                      <p className="text-[10px] text-gray-500 uppercase">{k}</p>
-                      <p className="text-xs text-gray-200 font-mono mt-0.5">{v ?? '—'}</p>
+                    <div key={k} className="bg-gray-50 border border-gray-200 rounded p-2">
+                      <p className="text-[9px] text-gray-500 uppercase font-semibold">{k}</p>
+                      <p className="font-mono text-gray-900 text-xs mt-0.5 break-all font-medium">{v ?? '—'}</p>
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-3 italic">
-                  AP-to-client associations are based on event metadata only.
-                  If ap_id is missing from events, the association is unknown.
-                </p>
+
+                {/* KPI row */}
+                <div className="grid grid-cols-2 divide-x divide-gray-200 border-t border-gray-200 bg-gray-50">
+                  <div className="p-3">
+                    <p className="stat-label">Total Ingested Events</p>
+                    <p className="text-lg font-bold text-blue-700 mt-1">
+                      {(selected.recent_event_count ?? 0).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="p-3">
+                    <p className="stat-label">Active WIDS Alerts</p>
+                    <p className={`text-lg font-bold mt-1 ${(selected.open_alert_count ?? 0) > 0 ? 'text-orange-600' : 'text-green-700'}`}>
+                      {selected.open_alert_count ?? 0}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              {/* Open Alerts */}
-              {apAlerts?.items.length > 0 && (
-                <div className="card">
-                  <div className="card-header">
-                    <span className="card-title text-orange-400">⚠ Open Alerts</span>
+              {/* Open alerts for this AP */}
+              {apAlerts?.items?.length > 0 && (
+                <div className="card shadow-sm p-0 overflow-hidden border-orange-200">
+                  <div className="px-3 py-2 bg-orange-50 border-b border-orange-200 flex items-center gap-2">
+                    <AlertTriangle size={13} className="text-orange-600" />
+                    <span className="text-xs font-semibold text-orange-800 uppercase tracking-wide">
+                      Active Threat Alerts ({apAlerts.items.length})
+                    </span>
                   </div>
-                  <div className="space-y-2">
+                  <div className="divide-y divide-gray-100">
                     {apAlerts.items.map((a: any) => (
-                      <div key={a.id} className="bg-navy-700/30 rounded-lg p-3 flex items-center justify-between">
+                      <div key={a.id} className="p-3 flex items-center justify-between text-xs">
                         <div>
-                          <p className="text-sm text-gray-200">{a.title}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{timeAgo(a.first_seen)}</p>
+                          <p className="font-semibold text-gray-900">{a.title}</p>
+                          <p className="text-gray-500 text-[11px] mt-0.5 font-mono">
+                            Source: {a.source_ip ?? 'Unknown'} · {timeAgo(a.first_seen)}
+                          </p>
                         </div>
-                        <span className={`badge badge-${a.severity}`}>{a.severity}</span>
+                        <span className="badge badge-high">{a.severity}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Recent events */}
-              <div className="card p-0">
-                <div className="p-4 border-b border-navy-700">
-                  <span className="card-title">Recent Events</span>
-                </div>
-                {evLoading ? (
-                  <div className="py-6 text-center text-gray-500 text-sm">Loading events…</div>
-                ) : (
-                  <div className="table-container">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-navy-700">
-                          <th className="table-head">Timestamp</th>
-                          <th className="table-head">Type</th>
-                          <th className="table-head">Source IP</th>
-                          <th className="table-head">Domain</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {apEvents?.items.map((ev: any) => (
-                          <tr key={ev.id} className="table-row">
-                            <td className="table-cell font-mono text-xs text-gray-400">{timeAgo(ev.timestamp_utc)}</td>
-                            <td className="table-cell text-xs">{ev.event_type}</td>
-                            <td className="table-cell font-mono text-xs">{ev.source_ip ?? '—'}</td>
-                            <td className="table-cell text-xs text-gray-400 truncate max-w-xs">{ev.domain ?? '—'}</td>
-                          </tr>
-                        ))}
-                        {!apEvents?.items.length && (
-                          <tr><td colSpan={4} className="py-6 text-center text-gray-500 text-sm">No events for this AP yet.</td></tr>
-                        )}
-                      </tbody>
-                    </table>
+              {/* Events for this AP */}
+              <div className="card shadow-sm p-0 overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2.5 bg-[#F8FAFC] border-b border-[#D8DEE4]">
+                  <div className="flex items-center gap-2">
+                    <Activity size={13} className="text-gray-500" />
+                    <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Recent Radio & Traffic Events
+                    </span>
                   </div>
-                )}
+                  <span className="text-[11px] text-gray-500 font-mono font-medium">
+                    {apEvents?.total ?? 0} events recorded
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Type</th>
+                        <th>Time</th>
+                        <th>Source IP</th>
+                        <th>Destination</th>
+                        <th>Proto</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {evLoading ? (
+                        <tr><td colSpan={5} className="text-center py-6 text-gray-400">Loading events…</td></tr>
+                      ) : (apEvents?.items ?? []).slice(0, 10).map((ev: any) => (
+                        <tr key={ev.id}>
+                          <td>
+                            <span className="badge badge-info">{ev.event_type.replace(/_/g, ' ')}</span>
+                          </td>
+                          <td className="font-mono text-gray-500 text-[11px]">{formatTs(ev.timestamp_utc ?? ev.timestamp)}</td>
+                          <td className="font-mono text-gray-900 font-semibold text-xs">{ev.source_ip ?? '—'}</td>
+                          <td className="font-mono text-gray-600 text-xs">{ev.destination_ip ?? '—'}</td>
+                          <td className="font-mono text-gray-500 text-xs uppercase">{ev.protocol ?? '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           )}
         </div>
+
       </div>
+
     </div>
   )
 }
