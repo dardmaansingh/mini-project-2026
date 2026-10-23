@@ -17,8 +17,8 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 480
 
     # Database
-    database_url: str = "postgresql+asyncpg://netsentinel:netsentinel_dev@localhost:5432/netsentinel"
-    database_sync_url: str = "postgresql://netsentinel:netsentinel_dev@localhost:5432/netsentinel"
+    database_url: str = "sqlite+aiosqlite:///./netsentinel.db"
+    database_sync_url: str = "sqlite:///./netsentinel.db"
 
     # Server
     backend_host: str = "127.0.0.1"

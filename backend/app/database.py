@@ -7,12 +7,22 @@ from sqlalchemy.orm import DeclarativeBase
 from backend.app.config import settings
 
 
+engine_kwargs = {
+    "echo": False,
+}
+
+if settings.database_url.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    engine_kwargs.update({
+        "pool_pre_ping": True,
+        "pool_size": 10,
+        "max_overflow": 20,
+    })
+
 engine = create_async_engine(
     settings.database_url,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
-    echo=settings.app_env == "development",
+    **engine_kwargs,
 )
 
 AsyncSessionLocal = async_sessionmaker(
