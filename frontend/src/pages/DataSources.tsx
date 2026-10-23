@@ -95,7 +95,7 @@ export default function DataSources() {
   const totalRate = sources.reduce((acc, s) => acc + (s.events_last_minute || 0), 0)
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
+    <div className="p-4 space-y-4 animate-fade-in">
       {/* Header */}
       <div className="page-header">
         <div>
@@ -182,23 +182,23 @@ export default function DataSources() {
       </div>
 
       {/* Synthetic Generator Command Console */}
-      <div className="card border-blue-500/30 bg-gradient-to-r from-navy-800 via-navy-800 to-navy-900">
-        <div className="card-header pb-2 border-b border-navy-700/60">
+      <div className="card shadow-sm">
+        <div className="card-header pb-2 border-b border-gray-100">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center">
-                <Zap size={18} />
+              <div className="w-8 h-8 rounded bg-green-50 text-green-700 flex items-center justify-center">
+                <Zap size={16} />
               </div>
               <div>
-                <h3 className="font-semibold text-white text-base flex items-center gap-2">
+                <h3 className="font-semibold text-gray-900 text-sm flex items-center gap-2">
                   Synthetic Generator Command Center
                   <span
                     className={`inline-block w-2 h-2 rounded-full ${
-                      isPaused ? 'bg-yellow-400' : 'bg-green-400 animate-pulse'
+                      isPaused ? 'bg-yellow-500' : 'bg-green-500 animate-pulse'
                     }`}
                   />
                 </h3>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-500">
                   Simulate live college campus traffic and inject attack scenarios to test detection rules
                 </p>
               </div>
@@ -225,11 +225,11 @@ export default function DataSources() {
           </div>
         </div>
 
-        <div className="mt-4 space-y-4">
+        <div className="mt-3 space-y-3">
           {/* Rate Controller */}
-          <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-navy-900/60 rounded-xl border border-navy-700/40">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-3 bg-gray-50 rounded border border-gray-200">
             <div className="flex items-center gap-4">
-              <span className="text-xs font-medium text-gray-300">
+              <span className="text-xs font-semibold text-gray-700">
                 Generation Rate:
               </span>
               <div className="flex items-center gap-2">
@@ -239,8 +239,8 @@ export default function DataSources() {
                     onClick={() => handleUpdateRate(rate)}
                     className={`px-2.5 py-1 rounded text-xs font-mono transition-colors ${
                       rateInput === rate
-                        ? 'bg-blue-600 text-white font-bold'
-                        : 'bg-navy-700 text-gray-300 hover:bg-navy-600'
+                        ? 'bg-green-700 text-white font-bold'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
                     }`}
                   >
                     {rate} eps
@@ -351,41 +351,41 @@ export default function DataSources() {
       </div>
 
       {/* Sources Table */}
-      <div className="card p-0 overflow-hidden">
-        <div className="p-4 border-b border-navy-700 bg-navy-900/60 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-300 uppercase tracking-wider flex items-center gap-2">
-            <Database size={16} className="text-blue-400" />
+      <div className="card shadow-sm p-0 overflow-hidden">
+        <div className="p-3 border-b border-[#EDF0F4] bg-[#F8FAFC] flex items-center justify-between">
+          <h2 className="text-xs font-semibold text-gray-700 uppercase tracking-wider flex items-center gap-2">
+            <Database size={14} className="text-gray-500" />
             Configured Data Feeds & Adapters
           </h2>
-          <span className="text-xs text-gray-400">
+          <span className="text-xs text-gray-500 font-mono">
             {sources.length} sources registered
           </span>
         </div>
 
-        <div className="table-container">
-          <table className="w-full text-left border-collapse">
+        <div className="overflow-x-auto">
+          <table className="data-table">
             <thead>
-              <tr className="border-b border-navy-700 bg-navy-900/40">
-                <th className="table-head">Feed Name</th>
-                <th className="table-head">Type</th>
-                <th className="table-head">Simulation Mode</th>
-                <th className="table-head">Status</th>
-                <th className="table-head">Throughput</th>
-                <th className="table-head">Total Ingested</th>
-                <th className="table-head">Parse Errors</th>
-                <th className="table-head">Last Active</th>
+              <tr>
+                <th style={{ width: 220 }}>Feed Name</th>
+                <th style={{ width: 110 }}>Type</th>
+                <th style={{ width: 130 }}>Simulation Mode</th>
+                <th style={{ width: 100 }}>Status</th>
+                <th style={{ width: 110 }}>Throughput</th>
+                <th style={{ width: 120 }}>Total Ingested</th>
+                <th style={{ width: 90 }}>Errors</th>
+                <th>Last Active</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-navy-700/50">
+            <tbody>
               {sourcesLoading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-gray-500 text-sm">
+                  <td colSpan={8} className="py-10 text-center text-gray-400 text-xs">
                     Loading telemetry sources…
                   </td>
                 </tr>
               ) : sources.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-gray-500 text-sm">
+                  <td colSpan={8} className="py-10 text-center text-gray-400 text-xs">
                     No data sources configured.
                   </td>
                 </tr>
@@ -393,75 +393,75 @@ export default function DataSources() {
                 sources.map(s => {
                   const Icon = SOURCE_TYPE_ICONS[s.source_type] || Database
                   return (
-                    <tr key={s.id} className="table-row">
-                      <td className="table-cell">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-navy-700 border border-navy-600 flex items-center justify-center text-blue-400">
-                            <Icon size={16} />
+                    <tr key={s.id}>
+                      <td>
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded bg-gray-100 border border-gray-200 flex items-center justify-center text-green-700 shrink-0">
+                            <Icon size={14} />
                           </div>
                           <div>
-                            <p className="font-medium text-gray-200 text-sm">{s.name}</p>
-                            <p className="text-[11px] font-mono text-gray-500">{s.id}</p>
+                            <p className="font-semibold text-gray-900 text-xs">{s.name}</p>
+                            <p className="text-[10px] font-mono text-gray-400">{s.id}</p>
                           </div>
                         </div>
                       </td>
 
-                      <td className="table-cell">
-                        <span className="font-mono text-xs text-gray-300 uppercase">
+                      <td>
+                        <span className="font-mono text-xs text-gray-700 uppercase">
                           {s.source_type}
                         </span>
                       </td>
 
-                      <td className="table-cell">
+                      <td>
                         {s.is_simulated ? (
-                          <span className="badge bg-yellow-500/10 text-yellow-400 border border-yellow-500/30">
-                            Simulated Traffic
+                          <span className="badge badge-medium">
+                            Simulated
                           </span>
                         ) : (
-                          <span className="badge bg-green-500/10 text-green-400 border border-green-500/30">
-                            Real Telemetry
+                          <span className="badge badge-green">
+                            Real Wire
                           </span>
                         )}
                       </td>
 
-                      <td className="table-cell">
-                        <div className="flex items-center gap-2">
+                      <td>
+                        <div className="flex items-center gap-1.5">
                           <span
                             className={`w-2 h-2 rounded-full ${
                               s.status === 'healthy' || s.status === 'online'
-                                ? 'bg-green-400'
-                                : 'bg-gray-500'
+                                ? 'bg-green-500'
+                                : 'bg-gray-400'
                             }`}
                           />
-                          <span className="text-xs capitalize text-gray-300">
+                          <span className="text-xs capitalize text-gray-700 font-medium">
                             {s.status}
                           </span>
                         </div>
                       </td>
 
-                      <td className="table-cell">
-                        <span className="font-mono text-xs text-purple-400">
+                      <td>
+                        <span className="font-mono text-xs text-purple-700 font-semibold">
                           {s.events_last_minute}/min
                         </span>
                       </td>
 
-                      <td className="table-cell">
-                        <span className="font-mono text-xs text-gray-200">
+                      <td>
+                        <span className="font-mono text-xs text-gray-900 font-semibold">
                           {s.events_total?.toLocaleString() ?? 0}
                         </span>
                       </td>
 
-                      <td className="table-cell">
+                      <td>
                         <span
-                          className={`font-mono text-xs ${
-                            s.parse_failures > 0 ? 'text-red-400' : 'text-gray-500'
+                          className={`font-mono text-xs font-semibold ${
+                            s.parse_failures > 0 ? 'text-red-600' : 'text-gray-400'
                           }`}
                         >
                           {s.parse_failures}
                         </span>
                       </td>
 
-                      <td className="table-cell text-xs text-gray-400">
+                      <td className="text-xs text-gray-500 font-mono">
                         {timeAgo(s.last_event_at)}
                       </td>
                     </tr>
@@ -474,11 +474,11 @@ export default function DataSources() {
       </div>
 
       {/* College Hybrid Ingestion Notice */}
-      <div className="card bg-navy-800/60 border-navy-700 flex items-start gap-3 p-4">
-        <AlertCircle size={20} className="text-blue-400 shrink-0 mt-0.5" />
-        <div className="text-xs text-gray-300 space-y-1">
-          <p className="font-semibold text-white">Hybrid Telemetry Architecture</p>
-          <p className="text-gray-400">
+      <div className="card shadow-sm flex items-start gap-3 p-4">
+        <AlertCircle size={18} className="text-green-700 shrink-0 mt-0.5" />
+        <div className="text-xs text-gray-700 space-y-1">
+          <p className="font-semibold text-gray-900">Hybrid Telemetry Architecture</p>
+          <p className="text-gray-600">
             NetSentinel supports dual-mode ingestion. During development and demonstration on Antigravity IDE,
             synthetic generation produces realistic college campus patterns (classes, dorm traffic, lab activity).
             Once the institution authorizes switch and firewall tap access, syslog and Zeek forwarders can be pointed
