@@ -32,12 +32,12 @@ export function statusClass(s: AlertStatus): string {
 
 export function severityColor(s: Severity): string {
   return {
-    critical: '#ef4444',
-    high: '#f97316',
-    medium: '#eab308',
-    low: '#3b82f6',
-    informational: '#6b7280',
-  }[s] ?? '#6b7280'
+    critical:      '#EF4444',
+    high:          '#F97316',
+    medium:        '#EAB308',
+    low:           '#38BDF8',
+    informational: '#94A3B8',
+  }[s] ?? '#94A3B8'
 }
 
 export function formatBytes(bytes?: number | null): string {
