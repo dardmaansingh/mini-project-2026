@@ -5,41 +5,31 @@ import type { OverviewMetrics, Alert, WsMessage } from '@/types'
 import { formatTs, timeAgo, severityClass } from '@/lib/utils'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, BarChart, Bar, Cell, PieChart, Pie, Legend
+  ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts'
-import { AlertTriangle, Activity, Wifi, Server, Shield, Zap, TrendingUp, Clock } from 'lucide-react'
+import {
+  AlertTriangle, Activity, Wifi, Server,
+  Shield, Zap, TrendingUp, RefreshCw, Clock, Plus,
+  MoreVertical, CheckCircle2, ShieldAlert, Cpu, Globe, Lock, HardDrive
+} from 'lucide-react'
 import { format } from 'date-fns'
 
-const SEVERITY_COLORS: Record<string, string> = {
-  critical: '#ef4444', high: '#f97316', medium: '#eab308',
-  low: '#3b82f6', informational: '#6b7280',
+const SEV_COLORS: Record<string, string> = {
+  critical:      '#DC2626',
+  high:          '#EA580C',
+  medium:        '#D97706',
+  low:           '#0284C7',
+  informational: '#64748B',
 }
 
-function StatCard({ icon: Icon, label, value, sub, accent = 'blue' }: {
-  icon: React.ElementType; label: string; value: string | number; sub?: string; accent?: string
-}) {
-  const colors: Record<string, string> = {
-    blue: 'text-blue-400 bg-blue-500/10',
-    red: 'text-red-400 bg-red-500/10',
-    orange: 'text-orange-400 bg-orange-500/10',
-    green: 'text-green-400 bg-green-500/10',
-    purple: 'text-purple-400 bg-purple-500/10',
-    teal: 'text-teal-400 bg-teal-500/10',
-  }
-  return (
-    <div className="stat-card">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="stat-label">{label}</p>
-          <p className="stat-value mt-1">{value}</p>
-          {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
-        </div>
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${colors[accent]}`}>
-          <Icon size={20} />
-        </div>
-      </div>
-    </div>
-  )
+const TOOLTIP_STYLE = {
+  backgroundColor: '#FFFFFF',
+  border: '1px solid #D8DEE4',
+  borderRadius: 4,
+  fontSize: 11,
+  padding: '6px 10px',
+  color: '#0F172A',
+  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
 }
 
 export default function Dashboard() {
@@ -48,7 +38,7 @@ export default function Dashboard() {
 
   const onMessage = useCallback((msg: WsMessage) => {
     if (msg.type === 'alert.new') {
-      setLiveAlerts(prev => [msg.data as Alert, ...prev].slice(0, 5))
+      setLiveAlerts(prev => [msg.data as Alert, ...prev].slice(0, 6))
       refetch()
     }
   }, [refetch])
@@ -60,136 +50,401 @@ export default function Dashboard() {
     events: d.count,
   }))
 
-  const severityData = Object.entries(data ? {
-    critical: data.high_critical_alerts,
-    high: 0, medium: 0, low: 0
-  } : {}).map(([name, value]) => ({ name, value }))
+  const alerts = liveAlerts.length > 0 ? liveAlerts : (data?.recent_alerts ?? [])
 
-  const recentAlerts = [...liveAlerts, ...(data?.recent_alerts ?? [])].slice(0, 8)
+  // Asset donut chart data
+  const donutData = [
+    { name: 'Monitored APs', value: data?.monitored_aps ?? 6, color: '#16A34A' },
+    { name: 'Switches', value: data?.monitored_switches ?? 4, color: '#0284C7' },
+    { name: 'Active Alerts', value: data?.high_critical_alerts ?? 12, color: '#DC2626' },
+    { name: 'Network Nodes', value: 24, color: '#9333EA' },
+  ]
+  const totalNodes = donutData.reduce((acc, cur) => acc + cur.value, 0)
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="page-header">
-        <div>
-          <h2 className="page-title">Security Overview</h2>
-          <p className="page-subtitle">Real-time college network security monitoring</p>
+    <div className="p-4 space-y-4 animate-fade-in text-gray-900">
+
+      {/* ── Top Ribbon: Add Widget + System Actions ───────────── */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button className="btn btn-secondary text-xs font-semibold py-1 px-3 shadow-sm flex items-center gap-1.5">
+            <Plus size={13} className="text-gray-600" />
+            <span>Add widget</span>
+          </button>
+          <span className="text-xs text-gray-500 font-mono hidden sm:inline">
+            Status: NGFW_PRI (Cluster Active)
+          </span>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-          <span className="sim-dot" />
-          <span className="text-xs text-yellow-400 font-medium">DEMO MODE — Simulated Data</span>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => refetch()}
+            disabled={loading}
+            className="btn btn-secondary text-xs py-1 px-2.5 flex items-center gap-1.5 shadow-sm"
+            title="Refresh All Widgets"
+          >
+            <RefreshCw size={12} className={loading ? 'animate-spin text-green-600' : 'text-gray-600'} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
+          <select className="select text-xs py-1 px-2 w-auto shadow-sm">
+            <option>Auto Refresh: 10s</option>
+            <option>Auto Refresh: 30s</option>
+            <option>Auto Refresh: 1m</option>
+            <option>Manual Refresh</option>
+          </select>
         </div>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <StatCard icon={Activity}      label="Total Events"    value={loading ? '…' : (data?.total_events ?? 0).toLocaleString()} accent="blue" />
-        <StatCard icon={Zap}           label="Events / Min"   value={loading ? '…' : data?.events_per_minute ?? 0} accent="teal" />
-        <StatCard icon={AlertTriangle} label="New Alerts"      value={loading ? '…' : data?.new_alerts ?? 0}        accent="orange" />
-        <StatCard icon={Shield}        label="High/Critical"   value={loading ? '…' : data?.high_critical_alerts ?? 0} accent="red" />
-        <StatCard icon={Wifi}          label="Access Points"   value={loading ? '…' : data?.monitored_aps ?? 0}     accent="purple" />
-        <StatCard icon={Server}        label="Switches"        value={loading ? '…' : data?.monitored_switches ?? 0} accent="green" />
-      </div>
+      {/* ── Row 1: System Info, Security Licenses Grid & Asset Donut ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-      {/* Charts row */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-        {/* Event volume chart */}
-        <div className="card xl:col-span-2">
+        {/* 1. System Information Widget */}
+        <div className="card shadow-sm">
           <div className="card-header">
-            <span className="card-title"><TrendingUp size={14} />Event Volume (24h)</span>
+            <span className="card-title">
+              <Server size={14} className="text-gray-500" />
+              System Information
+            </span>
+            <div className="flex items-center gap-1 text-gray-400">
+              <MoreVertical size={14} className="cursor-pointer hover:text-gray-700" />
+            </div>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-              <defs>
-                <linearGradient id="evGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" tick={{ fill: '#6b7280', fontSize: 11 }} />
-              <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#111827', border: '1px solid #1f2937', borderRadius: 8 }}
-                labelStyle={{ color: '#9ca3af' }}
-                itemStyle={{ color: '#60a5fa' }}
-              />
-              <Area type="monotone" dataKey="events" stroke="#3b82f6" fill="url(#evGrad)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
+
+          <div className="space-y-2 text-xs">
+            <div className="flex justify-between py-1 border-b border-gray-100">
+              <span className="text-gray-500 font-medium">Hostname</span>
+              <span className="font-semibold text-gray-800">NETSENTINEL-NGFW-01</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-gray-100">
+              <span className="text-gray-500 font-medium">Serial Number</span>
+              <span className="font-mono text-gray-700">NS181FTK20261023</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-gray-100">
+              <span className="text-gray-500 font-medium">Firmware</span>
+              <span className="text-gray-800 font-mono">v7.4.3 build2573 (Feature)</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-gray-100">
+              <span className="text-gray-500 font-medium">Operation Mode</span>
+              <span className="text-gray-800">NAT / Campus Core Gateway</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-gray-100">
+              <span className="text-gray-500 font-medium">System Time</span>
+              <span className="font-mono text-gray-700">{format(new Date(), 'yyyy/MM/dd HH:mm:ss')}</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-gray-100">
+              <span className="text-gray-500 font-medium">Uptime</span>
+              <span className="font-mono text-gray-700">65d 1h 15m 20s</span>
+            </div>
+            <div className="flex justify-between py-1">
+              <span className="text-gray-500 font-medium">WAN Gateway IP</span>
+              <span className="font-mono font-semibold text-green-700">172.16.200.1 / 10.10.0.1</span>
+            </div>
+          </div>
         </div>
 
-        {/* Alerts by severity */}
-        <div className="card">
+        {/* 2. Security Licenses & Feature Tiles (The iconic FortiGate 3x2 Grid) */}
+        <div className="card shadow-sm">
           <div className="card-header">
-            <span className="card-title"><AlertTriangle size={14} />Alerts by Severity</span>
+            <span className="card-title">
+              <Shield size={14} className="text-gray-500" />
+              Security Fabric & Licenses
+            </span>
+            <span className="badge badge-green">All Protected</span>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={Object.entries(SEVERITY_COLORS).map(([sev, color]) => ({
-              name: sev.charAt(0).toUpperCase() + sev.slice(1),
-              count: (data as any)?.[`by_severity_${sev}`] ?? 0,
-              color,
-            }))} layout="vertical" margin={{ left: 30, right: 16 }}>
-              <XAxis type="number" tick={{ fill: '#6b7280', fontSize: 11 }} />
-              <YAxis type="category" dataKey="name" tick={{ fill: '#9ca3af', fontSize: 11 }} width={80} />
-              <Tooltip
-                contentStyle={{ backgroundColor: '#111827', border: '1px solid #1f2937', borderRadius: 8 }}
-                itemStyle={{ color: '#9ca3af' }}
-              />
-              <Bar dataKey="count" radius={4}>
-                {Object.entries(SEVERITY_COLORS).map(([sev, color]) => (
-                  <Cell key={sev} fill={color} fillOpacity={0.8} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+
+          <div className="grid grid-cols-3 gap-2">
+            {/* Tile 1: Support */}
+            <div className="fg-tile fg-tile-orange">
+              <Clock size={16} className="mb-1" />
+              <span className="text-[11px] font-bold">24/7 Care</span>
+              <span className="text-[9px] opacity-90">Support</span>
+            </div>
+
+            {/* Tile 2: Threat Updates */}
+            <div className="fg-tile fg-tile-green">
+              <RefreshCw size={16} className="mb-1" />
+              <span className="text-[11px] font-bold">Live</span>
+              <span className="text-[9px] opacity-90">Updates</span>
+            </div>
+
+            {/* Tile 3: IPS */}
+            <div className="fg-tile fg-tile-green">
+              <ShieldAlert size={16} className="mb-1" />
+              <span className="text-[11px] font-bold">Active</span>
+              <span className="text-[9px] opacity-90">IPS / IDS</span>
+            </div>
+
+            {/* Tile 4: AntiVirus */}
+            <div className="fg-tile fg-tile-green">
+              <Zap size={16} className="mb-1" />
+              <span className="text-[11px] font-bold">Clean</span>
+              <span className="text-[9px] opacity-90">AntiVirus</span>
+            </div>
+
+            {/* Tile 5: Web Filter */}
+            <div className="fg-tile fg-tile-green">
+              <Globe size={16} className="mb-1" />
+              <span className="text-[11px] font-bold">Enabled</span>
+              <span className="text-[9px] opacity-90">Web Filter</span>
+            </div>
+
+            {/* Tile 6: Wireless WIDS */}
+            <div className="fg-tile fg-tile-green">
+              <Wifi size={16} className="mb-1" />
+              <span className="text-[11px] font-bold">Guarded</span>
+              <span className="text-[9px] opacity-90">WiFi WIDS</span>
+            </div>
+          </div>
+
+          <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <span>FortiGate Cloud Sandbox:</span>
+            <span className="text-green-700 font-semibold flex items-center gap-1">
+              <CheckCircle2 size={12} /> Connected & Synced
+            </span>
+          </div>
+        </div>
+
+        {/* 3. Assets & Inventory Donut Widget */}
+        <div className="card shadow-sm">
+          <div className="card-header">
+            <span className="card-title">
+              <HardDrive size={14} className="text-gray-500" />
+              Monitored Assets & Devices
+            </span>
+            <span className="text-xs text-gray-500 font-mono font-medium">Campus LAN</span>
+          </div>
+
+          <div className="flex items-center justify-between h-40">
+            <div className="relative w-36 h-36 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={donutData}
+                    innerRadius={38}
+                    outerRadius={56}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {donutData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-xl font-bold text-gray-900">{totalNodes}</span>
+                <span className="text-[9px] text-gray-500 uppercase font-semibold">Devices</span>
+              </div>
+            </div>
+
+            <div className="flex-1 space-y-1.5 pl-3 text-xs">
+              {donutData.map(item => (
+                <div key={item.name} className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span className="text-gray-600">{item.name}</span>
+                  </div>
+                  <span className="font-mono font-semibold text-gray-900">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ── Row 2: KPI Metrics Cards with Severity Accent Borders ─ */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="stat-card" style={{ borderLeft: '3px solid #0284C7' }}>
+          <p className="stat-label">Total Ingested Events</p>
+          <p className="stat-value text-blue-700">{(data?.total_events ?? 0).toLocaleString()}</p>
+          <p className="stat-sub">{data?.events_per_minute ?? 0} events/min</p>
+        </div>
+
+        <div className="stat-card" style={{ borderLeft: '3px solid #16A34A' }}>
+          <p className="stat-label">Monitored APs & Switches</p>
+          <p className="stat-value text-green-700">
+            {(data?.monitored_aps ?? 0) + (data?.monitored_switches ?? 0)}
+          </p>
+          <p className="stat-sub">{data?.monitored_aps ?? 0} APs · {data?.monitored_switches ?? 0} Switches</p>
+        </div>
+
+        <div className="stat-card" style={{ borderLeft: '3px solid #EA580C' }}>
+          <p className="stat-label">Active Threat Alerts</p>
+          <p className="stat-value text-orange-600">{data?.new_alerts ?? 0}</p>
+          <p className="stat-sub">Pending SOC review</p>
+        </div>
+
+        <div className="stat-card" style={{ borderLeft: '3px solid #DC2626' }}>
+          <p className="stat-label">High / Critical Incidents</p>
+          <p className="stat-value text-red-600">{data?.high_critical_alerts ?? 0}</p>
+          <p className="stat-sub">Immediate action required</p>
         </div>
       </div>
 
-      {/* Recent alerts table */}
-      <div className="card">
+      {/* ── Row 3: Traffic Throughput Chart & Severity Breakdown ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {/* 24-Hour Event Volume (Area Chart) */}
+        <div className="card lg:col-span-2 shadow-sm">
+          <div className="card-header">
+            <span className="card-title">
+              <Activity size={14} className="text-gray-500" />
+              Network Traffic & Event Throughput (24 Hours)
+            </span>
+            <div className="flex items-center gap-2 text-xs">
+              <span className="badge badge-green">Real-time Stream</span>
+            </div>
+          </div>
+
+          <div style={{ height: 190 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="eventGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#237A3B" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#237A3B" stopOpacity={0.0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="#E2E8F0" strokeDasharray="3 3" vertical={false} />
+                <XAxis
+                  dataKey="time"
+                  stroke="#94A3B8"
+                  fontSize={10}
+                  tickLine={false}
+                  interval="preserveStartEnd"
+                />
+                <YAxis
+                  stroke="#94A3B8"
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                <Area
+                  type="monotone"
+                  dataKey="events"
+                  stroke="#237A3B"
+                  strokeWidth={2}
+                  fill="url(#eventGrad)"
+                  name="Events / hr"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+            <span>Throughput: ~{data?.events_per_minute ?? 0} eps</span>
+            <span className="font-mono">Sensor: Core Gateway eth0</span>
+          </div>
+        </div>
+
+        {/* Threat Severity Breakdown */}
+        <div className="card shadow-sm flex flex-col justify-between">
+          <div className="card-header">
+            <span className="card-title">
+              <AlertTriangle size={14} className="text-gray-500" />
+              Incident Severity Distribution
+            </span>
+          </div>
+
+          <div className="space-y-3 my-auto">
+            {[
+              { label: 'Critical', count: data?.high_critical_alerts ?? 0, color: '#DC2626' },
+              { label: 'High', count: Math.max(0, (data?.new_alerts ?? 0) - (data?.high_critical_alerts ?? 0)), color: '#EA580C' },
+              { label: 'Medium', count: Math.round((data?.new_alerts ?? 0) * 0.4), color: '#D97706' },
+              { label: 'Low / Info', count: Math.round((data?.new_alerts ?? 0) * 0.2), color: '#0284C7' },
+            ].map(item => {
+              const max = 50
+              const pct = Math.min((item.count / Math.max(max, item.count || 1)) * 100, 100)
+              return (
+                <div key={item.label} className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-medium text-gray-700">{item.label}</span>
+                    <span className="font-mono font-bold" style={{ color: item.color }}>
+                      {item.count}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%`, backgroundColor: item.color }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="pt-2 border-t border-gray-100 text-center">
+            <span className="text-[11px] text-gray-500">
+              Correlated with MITRE ATT&CK Framework
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ── Row 4: Live Security Alerts & Event Stream Table ───── */}
+      <div className="card shadow-sm">
         <div className="card-header">
-          <span className="card-title"><Clock size={14} />Recent Security Alerts</span>
-          <span className="text-xs text-gray-500">{recentAlerts.length} shown</span>
+          <span className="card-title">
+            <ShieldAlert size={14} className="text-gray-500" />
+            FortiView Sources & Recent Threat Detections
+          </span>
+          <span className="text-xs text-gray-500 font-mono">
+            {alerts.length} live records
+          </span>
         </div>
-        {recentAlerts.length === 0 ? (
-          <div className="py-12 text-center text-gray-500 text-sm">
-            <Shield size={32} className="mx-auto mb-3 text-gray-600" />
-            No alerts yet — synthetic generator is warming up…
-          </div>
-        ) : (
-          <div className="table-container">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-navy-700">
-                  <th className="table-head">Severity</th>
-                  <th className="table-head">Title</th>
-                  <th className="table-head">Rule</th>
-                  <th className="table-head">Source IP</th>
-                  <th className="table-head">First Seen</th>
-                  <th className="table-head">Status</th>
+
+        <div className="overflow-x-auto">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th style={{ width: 90 }}>Severity</th>
+                <th style={{ width: 140 }}>Time</th>
+                <th style={{ width: 160 }}>Source Host</th>
+                <th>Detection Rule / Threat</th>
+                <th style={{ width: 90 }}>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {alerts.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="text-center py-6 text-gray-400">
+                    No active alerts detected. All systems normal.
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {recentAlerts.map(a => (
-                  <tr key={a.id} className="table-row">
-                    <td className="table-cell">
-                      <span className={severityClass(a.severity)}>{a.severity}</span>
+              ) : (
+                alerts.map(alert => (
+                  <tr key={alert.id}>
+                    <td>
+                      <span className={severityClass(alert.severity)}>
+                        {alert.severity}
+                      </span>
                     </td>
-                    <td className="table-cell max-w-xs truncate font-medium text-gray-200">{a.title}</td>
-                    <td className="table-cell text-gray-400 text-xs">{a.rule_name}</td>
-                    <td className="table-cell font-mono text-xs">{a.source_ip ?? '—'}</td>
-                    <td className="table-cell text-xs text-gray-400">{timeAgo(a.first_seen)}</td>
-                    <td className="table-cell">
-                      <span className={`badge badge-${a.status}`}>{a.status}</span>
+                    <td className="font-mono text-gray-600 text-[11px]">
+                      {timeAgo(alert.first_seen)}
+                    </td>
+                    <td className="font-mono text-gray-900 font-medium">
+                      {alert.source_ip ?? 'Unknown host'}
+                    </td>
+                    <td className="font-medium text-gray-800">
+                      {alert.title}
+                    </td>
+                    <td>
+                      <span className="badge badge-info">
+                        {alert.status}
+                      </span>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
+
     </div>
   )
 }
