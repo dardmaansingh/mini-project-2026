@@ -35,3 +35,16 @@ docs/FACULTY_VIVA_GUIDE.md
 *.db
 *.sqlite
 *.sqlite3
+
+# Runtime PID files
+*.pid
+.netsentinel_*.pid
+
+# Local developer convenience scripts (root directory only)
+/start.sh
+/stop.sh
+/run.sh
+/setup.sh
+/test.sh
+/Makefile
+/package.json
