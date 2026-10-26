@@ -91,27 +91,42 @@ NetSentinel implements 10 stateful correlation rules addressing the most prevale
 
 ## 🚀 Quick Start Guide
 
-### 1. Prerequisites
-- Python 3.10+ (tested on Python 3.14)
-- Node.js 20+ (Node.js 20.18 included in local environment)
+You can run and manage the entire NetSentinel platform with **just 1 or 2 commands**:
 
-### 2. Backend Setup & Run
+### ⚡ Option A: Single-Command Run (Recommended)
+
+Run everything (FastAPI Backend + Vite Frontend) concurrently in a single terminal:
+
 ```bash
-# Activate the Python virtual environment
-source .venv/bin/activate
-
-# Start the FastAPI server (runs on http://127.0.0.1:8000)
-./scripts/start_backend.sh
+# Start both services with unified live colored logs (Press Ctrl+C to stop both cleanly)
+./start.sh
+# (or: ./scripts/start_all.sh)
 ```
 
-### 3. Frontend Setup & Run
-In a second terminal:
+Or run in the background (daemon mode):
 ```bash
-# Start Vite development server (runs on http://127.0.0.1:5173)
-./scripts/start_frontend.sh
+./start.sh --background
+
+# Stop anytime:
+./stop.sh
+# (or: ./scripts/stop_all.sh)
 ```
 
-Open `http://127.0.0.1:5173/` in your browser to access the live SOC dashboard.
+*(Standard npm and make shortcuts are also supported: `npm start`, `npm run stop`, `make dev`, `make stop`)*
+
+---
+
+### 🛠️ The 3 Core Workflow Commands
+
+| Goal | Root Shortcut | Script Path | Description |
+|---|---|---|---|
+| **1. Setup / Update** | `./setup.sh` | `./scripts/setup_all.sh` | Creates `.venv`, installs Python & Node packages, checks DB schema. |
+| **2. Run Everything** | `./start.sh` | `./scripts/start_all.sh` | Starts Backend (`:8000`) and Frontend (`:5173`) with unified live logs. |
+| **3. Stop Services** | `./stop.sh` | `./scripts/stop_all.sh` | Gracefully shuts down both processes and frees ports 8000 & 5173. |
+| **4. Run Tests** *(Bonus)* | `./test.sh` | `.venv/bin/pytest tests/` | Executes all 18 automated unit and integration tests. |
+
+---
+
 
 ---
 
